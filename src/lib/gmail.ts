@@ -1,6 +1,9 @@
 import { google } from 'googleapis';
 import connectToDatabase from './mongodb';
 import User from '@/models/User';
+import Email from '@/models/Email';
+import { classifyEmail } from './llm';
+
 function extractBody(payload: any): string {
   if (!payload) return '';
   

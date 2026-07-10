@@ -18,6 +18,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
 
   const [activeTab, setActiveTab] = useState("inbox");
   const [selectedEmail, setSelectedEmail] = useState<any | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // AutoHandler State
   const [ruleCategory, setRuleCategory] = useState("Recruiter / Job Pitch");
@@ -70,7 +71,9 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
   };
 
   const filteredEmails = emails.filter(email => {
-    if (activeTab === "inbox") return true;
+    if (activeTab === "inbox") {
+      return selectedCategory ? email.category === selectedCategory : true;
+    }
     if (activeTab === "action") return email.needsReply;
     if (activeTab === "readlater") return !email.needsReply;
     return false;
@@ -118,35 +121,59 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
         <div className="flex-1 flex overflow-hidden">
            {/* Email List */}
            {(activeTab === 'inbox' || activeTab === 'action' || activeTab === 'readlater') && (
-             <div className={`overflow-y-auto border-r border-neutral-200 bg-[#fafafa] flex-shrink-0 transition-all duration-300 ease-in-out ${selectedEmail ? 'w-[400px]' : 'w-full'} custom-scrollbar`}>
-               {filteredEmails.map((email, idx) => (
-                 <div 
-                   key={idx} 
-                   onClick={() => setSelectedEmail(email)}
-                   className={`p-6 border-b border-neutral-200 cursor-pointer transition-colors ${selectedEmail?.id === email.id ? 'bg-white border-l-4 border-l-[#ff3300]' : 'hover:bg-white border-l-4 border-l-transparent'}`}
-                 >
-                   <div className="flex justify-between items-start mb-3">
-                     <span className="text-sm font-bold text-black truncate pr-4">{email.senderEmail?.split('<')[0] || 'Unknown'}</span>
-                   </div>
-                   <h3 className="text-base font-medium mb-2 line-clamp-1 text-black">{email.subject}</h3>
-                   <p className="text-sm text-neutral-500 line-clamp-2 leading-relaxed mb-4">{email.snippet}</p>
-                   
-                   {/* Capsule Badges */}
-                   <div className="flex gap-2 items-center flex-wrap">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest ${email.needsReply ? 'bg-[#ff3300]/10 text-[#ff3300] border border-[#ff3300]/20' : 'bg-neutral-100 text-neutral-500 border border-neutral-200'}`}>
-                         {email.category}
-                      </span>
-                      {email.needsReply && (
-                        <span className="px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest bg-red-50 text-red-600 border border-red-100">
-                          Needs Action
-                        </span>
-                      )}
-                   </div>
+             <div className={`flex flex-col border-r border-neutral-200 bg-[#fafafa] flex-shrink-0 transition-all duration-300 ease-in-out ${selectedEmail ? 'w-[400px]' : 'w-full'} custom-scrollbar`}>
+               
+               {/* Filtering Bar for Inbox */}
+               {activeTab === 'inbox' && (
+                 <div className="p-4 border-b border-neutral-200 bg-white flex gap-2 overflow-x-auto custom-scrollbar shrink-0">
+                   <button 
+                     onClick={() => setSelectedCategory(null)}
+                     className={`px-3 py-1.5 rounded-full text-xs font-mono uppercase tracking-widest whitespace-nowrap transition-colors ${!selectedCategory ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200'}`}
+                   >
+                     All
+                   </button>
+                   {['internship', 'youtube', 'newsletter', 'personal', 'other'].map(cat => (
+                     <button 
+                       key={cat}
+                       onClick={() => setSelectedCategory(cat)}
+                       className={`px-3 py-1.5 rounded-full text-xs font-mono uppercase tracking-widest whitespace-nowrap transition-colors ${selectedCategory === cat ? 'bg-[#ff3300] text-white border border-[#ff3300]/20' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 border border-transparent'}`}
+                     >
+                       {cat}
+                     </button>
+                   ))}
                  </div>
-               ))}
-               {filteredEmails.length === 0 && (
-                 <div className="p-12 text-center text-neutral-400 font-mono text-xs uppercase tracking-widest mt-20">No emails found in this view</div>
                )}
+
+               <div className="overflow-y-auto flex-1 custom-scrollbar">
+                 {filteredEmails.map((email, idx) => (
+                   <div 
+                     key={idx} 
+                     onClick={() => setSelectedEmail(email)}
+                     className={`p-6 border-b border-neutral-200 cursor-pointer transition-colors ${selectedEmail?.id === email.id ? 'bg-white border-l-4 border-l-[#ff3300]' : 'hover:bg-white border-l-4 border-l-transparent'}`}
+                   >
+                     <div className="flex justify-between items-start mb-3">
+                       <span className="text-sm font-bold text-black truncate pr-4">{email.senderEmail?.split('<')[0] || 'Unknown'}</span>
+                     </div>
+                     <h3 className="text-base font-medium mb-2 line-clamp-1 text-black">{email.subject}</h3>
+                     <p className="text-sm text-neutral-500 line-clamp-2 leading-relaxed mb-4">{email.snippet}</p>
+                     
+                     {/* Capsule Badges */}
+                     <div className="flex gap-2 items-center flex-wrap">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest ${email.needsReply ? 'bg-[#ff3300]/10 text-[#ff3300] border border-[#ff3300]/20' : 'bg-neutral-100 text-neutral-500 border border-neutral-200'}`}>
+                           {email.category}
+                        </span>
+                        {email.needsReply && (
+                          <span className="px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest bg-red-50 text-red-600 border border-red-100">
+                            Needs Action
+                          </span>
+                        )}
+                     </div>
+                   </div>
+                 ))}
+                 {filteredEmails.length === 0 && (
+                   <div className="p-12 text-center text-neutral-400 font-mono text-xs uppercase tracking-widest mt-20">No emails found in this view</div>
+                 )}
+               </div>
              </div>
            )}
 
