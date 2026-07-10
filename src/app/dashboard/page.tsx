@@ -5,6 +5,9 @@ import { fetchRecentEmails } from "@/lib/gmail";
 import { redirect } from "next/navigation";
 import DashboardView from "@/components/DashboardView";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Dashboard({ searchParams }: { searchParams: { pageToken?: string } }) {
   const session = await getServerSession(authOptions);
 

@@ -1,10 +1,21 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { signOut } from "next-auth/react";
 import { Mail, Settings, Clock, LogOut, CheckCircle, Zap } from "lucide-react";
 
 export default function DashboardView({ emails, sessionEmail }: { emails: any[], sessionEmail: string }) {
+  const router = useRouter();
+
+  // Auto-polling for new emails every 15 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [router]);
+
   const [activeTab, setActiveTab] = useState("inbox");
   const [selectedEmail, setSelectedEmail] = useState<any | null>(null);
 

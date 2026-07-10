@@ -1,48 +1,48 @@
 import { google } from 'googleapis';
 import connectToDatabase from './mongodb';
 import User from '@/models/User';
-import Email from '@/models/Email';
-import { classifyEmail } from './llm';
-
 function extractBody(payload: any): string {
   if (!payload) return '';
+  
+  let htmlBody = '';
+  let textBody = '';
+
+  function traverse(part: any) {
+    if (part.mimeType === 'text/html' && part.body?.data) {
+      htmlBody = Buffer.from(part.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8');
+    } else if (part.mimeType === 'text/plain' && part.body?.data) {
+      textBody = Buffer.from(part.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8');
+    }
+    
+    if (part.parts) {
+      for (const p of part.parts) {
+        traverse(p);
+      }
+    }
+  }
+  
+  traverse(payload);
+  
+  if (htmlBody) return htmlBody;
+  if (textBody) return textBody;
   
   if (payload.body?.data) {
     return Buffer.from(payload.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8');
   }
   
-  if (payload.parts) {
-    let htmlPart = payload.parts.find((part: any) => part.mimeType === 'text/html');
-    if (htmlPart && htmlPart.body?.data) {
-      return Buffer.from(htmlPart.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8');
-    }
-    
-    let textPart = payload.parts.find((part: any) => part.mimeType === 'text/plain');
-    if (textPart && textPart.body?.data) {
-      return Buffer.from(textPart.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8');
-    }
-    
-    // Check nested parts (e.g. multipart/alternative inside multipart/mixed)
-    for (const part of payload.parts) {
-      if (part.parts) {
-        const nestedBody = extractBody(part);
-        if (nestedBody) return nestedBody;
-      }
-    }
-  }
   return '';
 }
 
 function decodeHTMLEntities(text: string) {
   if (!text) return '';
   return text
-    .replace(/&#39;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&#8204;/g, '')
-    .replace(/&nbsp;/g, ' ');
+    .replace(/&#39;?/g, "'")
+    .replace(/&quot;?/g, '"')
+    .replace(/&amp;?/g, '&')
+    .replace(/&lt;?/g, '<')
+    .replace(/&gt;?/g, '>')
+    .replace(/&#8204;?/g, '')
+    .replace(/&nbsp;?/g, ' ');
 }
 
 export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
