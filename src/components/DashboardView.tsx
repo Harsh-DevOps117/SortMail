@@ -227,7 +227,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                    >
                      All
                    </button>
-                   {['internship', 'youtube', 'newsletter', 'personal', 'social', 'finance', 'scam', 'security', 'other'].map(cat => (
+                   {['internship', 'youtube', 'newsletter', 'personal', 'social', 'finance', 'security', 'other'].map(cat => (
                      <button
                        key={cat}
                        onClick={() => setSelectedCategory(cat)}
@@ -374,7 +374,6 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                                   <option value="personal">Personal / Direct Contact</option>
                                   <option value="social">Social Media</option>
                                   <option value="finance">Finance / Bills / Receipts</option>
-                                  <option value="scam">Spam / Scam / Phishing</option>
                                   <option value="security">Security / 2FA / Logins</option>
                                   <option value="other">Other / General</option>
                                </select>
