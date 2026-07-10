@@ -506,7 +506,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                          )}
                        </div>
                      </div>
-                   </div>div>
+                   </div>
                  </div>
                </div>
              </div>

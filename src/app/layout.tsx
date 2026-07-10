@@ -14,8 +14,54 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SortMail | AI Triage",
-  description: "Sorting the noise. Showing what actually needs a reply.",
+  title: "SortMail | Autonomous AI Email Triage",
+  description: "An intelligent, privacy-first email routing engine built for focus. Configure autonomous rules to blast context-aware AI replies.",
+  keywords: ["AI email", "email triage", "inbox zero", "autonomous email", "LLM email client", "Gmail AI", "automated replies", "SortMail", "AI productivity"],
+  authors: [{ name: "SortMail Team" }],
+  creator: "SortMail",
+  publisher: "SortMail",
+  metadataBase: new URL("https://sortmail.vercel.app"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "SortMail | Autonomous AI Email Triage",
+    description: "An intelligent, privacy-first email routing engine built for focus.",
+    url: "https://sortmail.vercel.app",
+    siteName: "SortMail",
+    images: [
+      {
+        url: "/og-image.png", // Will resolve relative to metadataBase
+        width: 1200,
+        height: 630,
+        alt: "SortMail AI Triage Engine"
+      }
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SortMail | Autonomous AI Email Triage",
+    description: "An intelligent, privacy-first email routing engine built for focus.",
+    creator: "@sortmail",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: "your-google-site-verification-code", // Replace when setting up Google Search Console
+  },
+  category: "productivity",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
