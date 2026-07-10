@@ -54,3 +54,77 @@ export async function classifyEmail(subject: string, htmlBody: string, hasUnsubs
     return { category: 'other', needsReply: false };
   }
 }
+
+export async function generateContextualReply(originalSnippet: string, instructions: string) {
+  const prompt = `
+    You are an AI Email Assistant. 
+    A user has received this email snippet: "${originalSnippet}"
+    
+    The user wants you to draft a reply to this email based on these instructions: "${instructions}"
+    
+    Output ONLY valid JSON in the following format:
+    {
+      "subject": "Re: Your Email",
+      "body": "The HTML formatted body of the email reply."
+    }
+  `;
+
+  try {
+    const response = await fetch('https://api.meshapi.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.MESSH_API_KEY}` 
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-4o",
+        messages: [{ role: "system", content: prompt }],
+        response_format: { type: "json_object" }
+      })
+    });
+
+    const data = await response.json();
+    const resultText = data.choices[0].message.content.trim();
+    const cleanJson = resultText.replace(/```json/g, '').replace(/```/g, '');
+    return JSON.parse(cleanJson);
+  } catch (error) {
+    console.error("LLM Draft Error:", error);
+    return { subject: "Re: Update", body: instructions }; 
+  }
+}
+
+export async function generateBroadcastEmail(instructions: string) {
+  const prompt = `
+    You are an AI Email Assistant.
+    Draft a professional broadcast email based on the following instructions: "${instructions}"
+    
+    Output ONLY valid JSON in the following format:
+    {
+      "subject": "Compelling Subject Line",
+      "body": "The HTML formatted body of the email."
+    }
+  `;
+
+  try {
+    const response = await fetch('https://api.meshapi.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.MESSH_API_KEY}` 
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-4o",
+        messages: [{ role: "system", content: prompt }],
+        response_format: { type: "json_object" }
+      })
+    });
+
+    const data = await response.json();
+    const resultText = data.choices[0].message.content.trim();
+    const cleanJson = resultText.replace(/```json/g, '').replace(/```/g, '');
+    return JSON.parse(cleanJson);
+  } catch (error) {
+    console.error("LLM Broadcast Draft Error:", error);
+    return { subject: "Update", body: instructions };
+  }
+}

@@ -28,6 +28,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
   const [isBulkSending, setIsBulkSending] = useState(false);
 
   const [savedRules, setSavedRules] = useState<any[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
 
   const fetchRules = async () => {
     try {
@@ -39,9 +40,20 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
     } catch (err) {}
   };
 
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch("/api/bulk-history");
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data);
+      }
+    } catch (err) {}
+  };
+
   useEffect(() => {
     if (activeTab === 'autohandler') {
       fetchRules();
+      fetchHistory();
     }
   }, [activeTab]);
 
@@ -127,8 +139,8 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
   };
 
   const handleBulkSend = async (rule: any) => {
-    if (!rule.targetSenders || rule.targetSenders === '*') {
-      toast.error("Please specify explicit email addresses for manual bulk trigger (e.g., example@domain.com).");
+    if (!rule.targetSenders) {
+      toast.error("Please specify a target sender.");
       return;
     }
     setIsBulkSending(true);
@@ -142,6 +154,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
       const data = await res.json();
       if (res.ok) {
         toast.success(`Successfully blasted to ${data.sentCount} targets!`, { id: toastId });
+        fetchHistory();
       } else {
         toast.error(data.error || "Failed to trigger bulk send.", { id: toastId });
       }
@@ -427,45 +440,73 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                       </div>
                    </div>
 
-                   {/* Right Col: Manual Execute Box */}
-                   <div className="border border-neutral-200 rounded-sm p-10 bg-white shadow-sm flex flex-col h-full max-h-[850px]">
-                     <div className="mb-8 shrink-0">
-                       <h3 className="text-xl font-bold mb-4 text-black uppercase tracking-tight flex items-center gap-3">
-                         <Zap className="w-6 h-6 text-[#ff3300]" /> Deployed Rules
-                       </h3>
-                       <p className="text-sm text-neutral-600 leading-relaxed font-mono">
-                         Trigger your active automation rules manually. Blast out configured instructions directly to target senders without waiting for autonomous processing.
-                       </p>
+                   {/* Right Col: Manual Execute & History Box */}
+                   <div className="flex flex-col gap-6 h-full max-h-[850px]">
+                     {/* Rules List */}
+                     <div className="border border-neutral-200 rounded-sm p-8 bg-white shadow-sm flex flex-col flex-1 min-h-[400px]">
+                       <div className="mb-6 shrink-0">
+                         <h3 className="text-xl font-bold mb-3 text-black uppercase tracking-tight flex items-center gap-3">
+                           <Zap className="w-5 h-5 text-[#ff3300]" /> Deployed Rules
+                         </h3>
+                         <p className="text-[11px] text-neutral-500 leading-relaxed font-mono">
+                           Trigger your rules manually. If Target is "*", the AI will draft contextual replies for all unresolved emails in that category. Otherwise, it broadcasts your instructions directly.
+                         </p>
+                       </div>
+
+                       <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-4">
+                         {savedRules.length === 0 ? (
+                           <div className="p-8 text-center text-neutral-400 font-mono text-xs uppercase tracking-widest border-2 border-dashed border-neutral-200">
+                             No rules deployed yet.
+                           </div>
+                         ) : (
+                           savedRules.map((rule, idx) => (
+                             <div key={idx} className="bg-neutral-50 border border-neutral-200 p-5 font-mono text-xs text-neutral-500 flex flex-col gap-3 hover:border-black transition-colors">
+                                <div className="flex justify-between items-center border-b border-neutral-200 pb-2">
+                                   <span className="uppercase tracking-widest font-bold text-black text-sm">{rule.category}</span>
+                                   {rule.attachmentUrl && <span className="bg-green-100 text-green-700 px-3 py-1 text-[10px] rounded-full shadow-sm">Attached</span>}
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                   <span className="uppercase tracking-widest opacity-60">Target</span>
+                                   <span className="font-bold text-[#ff3300] break-all">{rule.targetSenders}</span>
+                                </div>
+                                <button 
+                                  onClick={() => handleBulkSend(rule)}
+                                  disabled={isBulkSending}
+                                  className="mt-2 bg-[#ff3300] text-white px-4 py-3 text-[10px] font-bold uppercase tracking-widest rounded-none w-full hover:bg-black transition-colors disabled:opacity-50"
+                                >
+                                  {isBulkSending ? "Transmitting..." : "Execute Bulk Send"}
+                                </button>
+                             </div>
+                           ))
+                         )}
+                       </div>
                      </div>
 
-                     <div className="flex-1 overflow-y-auto space-y-6 custom-scrollbar pr-4">
-                       {savedRules.length === 0 ? (
-                         <div className="p-8 text-center text-neutral-400 font-mono text-xs uppercase tracking-widest border-2 border-dashed border-neutral-200">
-                           No rules deployed yet.
-                         </div>
-                       ) : (
-                         savedRules.map((rule, idx) => (
-                           <div key={idx} className="bg-neutral-50 border border-neutral-200 p-6 font-mono text-xs text-neutral-500 flex flex-col gap-4 hover:border-black transition-colors">
-                              <div className="flex justify-between items-center border-b border-neutral-200 pb-3">
-                                 <span className="uppercase tracking-widest font-bold text-black text-sm">{rule.category}</span>
-                                 {rule.attachmentUrl && <span className="bg-green-100 text-green-700 px-3 py-1 text-[10px] rounded-full shadow-sm">Attached</span>}
+                     {/* Transmission History */}
+                     <div className="border border-neutral-200 rounded-sm p-6 bg-white shadow-sm flex flex-col h-[280px]">
+                       <h3 className="text-sm font-bold mb-4 text-black uppercase tracking-tight flex items-center gap-2 border-b border-neutral-100 pb-3">
+                         <Clock className="w-4 h-4 text-neutral-400" /> Transmission History
+                       </h3>
+                       <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-2">
+                         {history.length === 0 ? (
+                            <div className="text-[10px] text-neutral-400 font-mono uppercase text-center mt-8">No bulk transmissions yet.</div>
+                         ) : (
+                            history.map((h, i) => (
+                              <div key={i} className="flex justify-between items-center border-b border-neutral-50 pb-2">
+                                <div className="flex flex-col">
+                                   <span className="text-xs font-bold uppercase tracking-widest text-black">{h.category}</span>
+                                   <span className="text-[10px] text-neutral-500 font-mono">{new Date(h.createdAt).toLocaleString()}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                   <span className="text-[9px] font-mono bg-neutral-100 text-neutral-600 px-2 py-1 rounded-sm uppercase tracking-widest">{h.type === 'broadcast' ? 'Broadcast' : 'AI Context'}</span>
+                                   <span className="text-xs font-bold text-green-600">+{h.targetCount}</span>
+                                </div>
                               </div>
-                              <div className="flex flex-col gap-2">
-                                 <span className="uppercase tracking-widest opacity-60">Target Senders</span>
-                                 <span className="font-bold text-[#ff3300] break-all">{rule.targetSenders}</span>
-                              </div>
-                              <button
-                                onClick={() => handleBulkSend(rule)}
-                                disabled={isBulkSending}
-                                className="mt-4 bg-[#ff3300] text-white px-4 py-4 text-[10px] font-bold uppercase tracking-widest rounded-none w-full hover:bg-black transition-colors disabled:opacity-50"
-                              >
-                                {isBulkSending ? "Transmitting..." : "Execute Bulk Send"}
-                              </button>
-                           </div>
-                         ))
-                       )}
+                            ))
+                         )}
+                       </div>
                      </div>
-                   </div>
+                   </div>div>
                  </div>
                </div>
              </div>
