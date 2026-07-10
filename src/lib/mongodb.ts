@@ -1,9 +1,6 @@
 import mongoose from 'mongoose';
 
-// We will check for the MONGODB_URI inside the function so it doesn't crash Vercel builds
 
-// In Next.js, we need to cache the Mongoose connection 
-// across hot reloads in development so we don't exhaust connection pools
 let cached = (global as any).mongoose;
 
 if (!cached) {
@@ -31,8 +28,8 @@ async function connectToDatabase() {
       return mongoose;
     });
   }
-  
-  try {
+
+    try {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;

@@ -1,10 +1,9 @@
 import { optimizeEmailForLLM } from './nlp';
 
 export async function classifyEmail(subject: string, htmlBody: string, hasUnsubscribe: boolean) {
-  // Optimize the email body to save LLM tokens using our NLP script
   const optimizedBody = optimizeEmailForLLM(htmlBody || '');
-  
-  const prompt = `
+
+    const prompt = `
     You are an AI Email Triage Assistant.
     Analyze the following email and output ONLY valid JSON.
     
@@ -12,7 +11,7 @@ export async function classifyEmail(subject: string, htmlBody: string, hasUnsubs
     Subject: ${subject}
     Body (Stemmed/Optimized): ${optimizedBody.substring(0, 500)} // Truncated to save tokens
     
-    Categorize this email into exactly ONE of the following categories: ["internship", "youtube", "newsletter", "personal", "other"].
+    Categorize this email into exactly ONE of the following categories: ["internship", "youtube", "newsletter", "personal", "social", "finance", "scam", "other"].
     Also determine if the email explicitly requires a human reply (needsReply: true/false).
     
     Output Format:
@@ -30,26 +29,24 @@ export async function classifyEmail(subject: string, htmlBody: string, hasUnsubs
         'Authorization': `Bearer ${process.env.MESSH_API_KEY}` 
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o", // MeshAPI universal routing format
+        model: "openai/gpt-4o", 
         messages: [{ role: "system", content: prompt }],
-        response_format: { type: "json_object" } // Force JSON
+        response_format: { type: "json_object" } 
       })
     });
 
     const data = await response.json();
-    
-    // Parse the JSON output from the LLM
+
     const resultText = data.choices[0].message.content.trim();
     const cleanJson = resultText.replace(/```json/g, '').replace(/```/g, '');
     const result = JSON.parse(cleanJson);
-    
-    return {
+
+        return {
       category: result.category || 'other',
       needsReply: result.needsReply || false
     };
   } catch (error) {
     console.error("LLM Classification Error:", error);
-    // Smart fallback if the LLM fails
     if (hasUnsubscribe) return { category: 'newsletter', needsReply: false };
     return { category: 'other', needsReply: false };
   }

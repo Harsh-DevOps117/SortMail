@@ -22,23 +22,23 @@ export const authOptions = {
     async signIn({ user, account, profile }: any) {
       if (account?.provider === "google") {
         await connectToDatabase();
-        
-        let existingUser = await User.findOne({ googleId: user.id });
-        
-        if (!existingUser) {
+
+                let existingUser = await User.findOne({ googleId: user.id });
+
+                if (!existingUser) {
           existingUser = new User({
             googleId: user.id,
             email: user.email,
             name: user.name,
           });
         }
-        
-        existingUser.accessToken = account.access_token || existingUser.accessToken;
+
+                existingUser.accessToken = account.access_token || existingUser.accessToken;
         if (account.refresh_token) {
           existingUser.refreshToken = account.refresh_token;
         }
-        
-        await existingUser.save();
+
+                await existingUser.save();
         return true;
       }
       return false;

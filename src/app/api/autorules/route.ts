@@ -18,7 +18,6 @@ export async function POST(request: Request) {
 
     const { category, instructions, targetSenders, attachmentUrl } = await request.json();
 
-    // Upsert rule based on category (one rule per category)
     const rule = await AutoRule.findOneAndUpdate(
       { userId: user._id, category },
       { instructions, targetSenders: targetSenders || '*', attachmentUrl, createdAt: new Date() },

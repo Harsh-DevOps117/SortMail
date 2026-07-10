@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     siteName: "SortMail",
     images: [
       {
-        url: "/og-image.png", // Will resolve relative to metadataBase
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "SortMail AI Triage Engine"
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: "your-google-site-verification-code", // Replace when setting up Google Search Console
+    google: "your-google-site-verification-code",
   },
   category: "productivity",
   manifest: "/manifest.json",

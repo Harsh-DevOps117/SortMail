@@ -23,7 +23,7 @@ const UserSchema: Schema = new Schema({
     isActive: { type: Boolean, default: true }
   }]
 }, {
-  timestamps: true // Automatically adds createdAt and updatedAt
+  timestamps: true 
 });
 
 export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

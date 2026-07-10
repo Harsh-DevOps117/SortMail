@@ -6,8 +6,8 @@ import { classifyEmail } from './llm';
 
 function extractBody(payload: any): string {
   if (!payload) return '';
-  
-  let htmlBody = '';
+
+    let htmlBody = '';
   let textBody = '';
 
   function traverse(part: any) {
@@ -16,24 +16,24 @@ function extractBody(payload: any): string {
     } else if (part.mimeType === 'text/plain' && part.body?.data) {
       textBody = Buffer.from(part.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8');
     }
-    
-    if (part.parts) {
+
+        if (part.parts) {
       for (const p of part.parts) {
         traverse(p);
       }
     }
   }
-  
-  traverse(payload);
-  
-  if (htmlBody) return htmlBody;
+
+    traverse(payload);
+
+    if (htmlBody) return htmlBody;
   if (textBody) return textBody;
-  
-  if (payload.body?.data) {
+
+    if (payload.body?.data) {
     return Buffer.from(payload.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8');
   }
-  
-  return '';
+
+    return '';
 }
 
 function decodeHTMLEntities(text: string) {
@@ -50,8 +50,8 @@ function decodeHTMLEntities(text: string) {
 
 export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
   await connectToDatabase();
-  
-  const user = await User.findOne({ email: userEmail });
+
+    const user = await User.findOne({ email: userEmail });
   if (!user || !user.accessToken) {
     throw new Error('User not found or not authenticated with Google');
   }
@@ -60,8 +60,8 @@ export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET
   );
-  
-  oauth2Client.setCredentials({
+
+    oauth2Client.setCredentials({
     access_token: user.accessToken,
     refresh_token: user.refreshToken,
   });
@@ -78,19 +78,16 @@ export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
 
     const messages = response.data.messages || [];
     const nextPageToken = response.data.nextPageToken || null;
-    
-    // Process emails in parallel
+
     const detailedEmails = await Promise.all(
       messages.map(async (msg) => {
         if (!msg.id) return null;
 
-        // 1. Check if we already classified and saved this email in MongoDB!
         const existingEmail = await Email.findOne({ messageId: msg.id });
         if (existingEmail) {
           return existingEmail;
         }
-        
-        // 2. If it's new, fetch the full content from Gmail
+
         const msgDetail = await gmail.users.messages.get({
           userId: 'me',
           id: msg.id,
@@ -106,20 +103,17 @@ export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
         const from = fromHeader ? fromHeader.value : 'Unknown';
         const snippet = decodeHTMLEntities(msgDetail.data.snippet || '');
         const hasUnsubscribe = !!unsubscribeHeader;
-        
-        const htmlBody = extractBody(msgDetail.data.payload);
 
-        // 3. Let the LLM Decide the Category & Action!
-        // We pass the snippet as the HTML body for now to save tokens, it contains the core context.
+                const htmlBody = extractBody(msgDetail.data.payload);
+
         const llmResult = await classifyEmail(subject || '', snippet, hasUnsubscribe);
 
-        // 4. Save to MongoDB so we never have to run the LLM on this email again
         const newEmail = await Email.create({
           userId: user._id,
           messageId: msg.id,
           threadId: msgDetail.data.threadId,
           subject: subject,
-          senderEmail: from, // Mongoose schema expects senderEmail, not 'from'
+          senderEmail: from, 
           snippet: snippet,
           htmlBody: htmlBody,
           category: llmResult.category,
@@ -143,8 +137,8 @@ export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
 
 export async function sendEmail(userEmail: string, to: string, subject: string, textContent: string, htmlContent?: string) {
   await connectToDatabase();
-  
-  const user = await User.findOne({ email: userEmail });
+
+    const user = await User.findOne({ email: userEmail });
   if (!user || !user.accessToken) {
     throw new Error('User not found or not authenticated with Google');
   }
@@ -153,8 +147,8 @@ export async function sendEmail(userEmail: string, to: string, subject: string, 
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET
   );
-  
-  oauth2Client.setCredentials({
+
+    oauth2Client.setCredentials({
     access_token: user.accessToken,
     refresh_token: user.refreshToken,
   });

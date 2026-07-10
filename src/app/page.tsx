@@ -18,8 +18,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-[#ff3300] selection:text-white">
       
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-8 md:px-16 py-6 bg-white/80 backdrop-blur-xl border-b border-neutral-100">
+      <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-4 md:px-16 py-4 md:py-6 bg-white/80 backdrop-blur-xl border-b border-neutral-100">
         <div className="text-xl font-bold tracking-tighter text-black flex items-center gap-2">
           <span className="w-4 h-4 bg-[#ff3300] inline-block"></span>
           SortMail
@@ -32,18 +31,16 @@ export default function Home() {
         <LoginButton />
       </nav>
 
-      {/* Hero Section */}
-      <main className="relative pt-40 pb-32 px-8 md:px-16 max-w-[1600px] mx-auto overflow-hidden">
+      <main className="relative pt-32 md:pt-40 pb-24 md:pb-32 px-4 md:px-16 max-w-[1600px] mx-auto overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           
-          {/* Left Text */}
           <div className="z-10 relative">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <h1 className="text-[4rem] sm:text-[6rem] xl:text-[8rem] font-light tracking-tighter leading-[0.9] text-black mb-8">
+              <h1 className="text-5xl sm:text-[6rem] xl:text-[8rem] font-light tracking-tighter leading-[0.9] text-black mb-8">
                 The Smartest<br />Way to Sort<br />Your Email.
               </h1>
               <p className="text-xl md:text-2xl text-neutral-500 max-w-lg mb-12 font-light leading-relaxed">
@@ -58,10 +55,8 @@ export default function Home() {
             </motion.div>
           </div>
 
-          {/* Right Simulation (The Email Triage Factory) */}
           <div className="relative h-[600px] hidden lg:block overflow-visible mt-12 w-full bg-[#fdfdfd] border border-neutral-100 shadow-[0_0_100px_rgba(0,0,0,0.02)]">
             
-            {/* The Central LLM Engine (Scanner) */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-64 border-2 border-[#ff3300] bg-white z-20 flex flex-col items-center justify-center shadow-[0_0_50px_rgba(255,51,0,0.1)]">
                <motion.div 
                  className="absolute top-0 w-full h-1 bg-[#ff3300] shadow-[0_0_20px_#ff3300]"
@@ -72,7 +67,6 @@ export default function Home() {
                <span className="font-mono text-xs uppercase tracking-widest text-[#ff3300] text-center leading-loose">MeshAPI<br/>Triage Node</span>
             </div>
 
-            {/* Incoming Unsorted Emails (Left Side) */}
             <div className="absolute top-1/2 left-0 -translate-y-1/2 w-40 h-full flex flex-col justify-center gap-12 pl-12">
                {[1, 2, 3].map((i) => (
                  <motion.div 
@@ -88,10 +82,8 @@ export default function Home() {
                ))}
             </div>
 
-            {/* Outgoing Sorted Buckets (Right Side) */}
             <div className="absolute top-0 right-12 h-full flex flex-col justify-between py-12 w-56">
               
-              {/* Action Required Bucket */}
               <div className="relative w-full h-32 border-2 border-dashed border-[#ff3300] bg-[#ff3300]/5 flex flex-col items-center justify-center">
                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#ff3300] mb-2 font-bold">Action Required</span>
                  <motion.div 
@@ -104,7 +96,6 @@ export default function Home() {
                  </motion.div>
               </div>
 
-              {/* Read Later Bucket */}
               <div className="relative w-full h-32 border-2 border-dashed border-neutral-200 bg-neutral-50 flex flex-col items-center justify-center">
                  <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-400 mb-2">Read Later</span>
                  <motion.div 
@@ -117,7 +108,6 @@ export default function Home() {
                  </motion.div>
               </div>
 
-              {/* Auto-Handled Bucket */}
               <div className="relative w-full h-32 border-2 border-dashed border-neutral-200 bg-neutral-50 flex flex-col items-center justify-center">
                  <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-400 mb-2">Auto-Handled</span>
                  <motion.div 
@@ -132,15 +122,10 @@ export default function Home() {
 
             </div>
 
-            {/* Connection Lines (SVG) */}
             <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
-               {/* Into Engine */}
                <path d="M 0 300 L 350 300" fill="none" stroke="#e5e5e5" strokeWidth="2" strokeDasharray="6,6" />
-               {/* Out of Engine to Action */}
                <path d="M 600 300 L 650 300 L 650 110 L 720 110" fill="none" stroke="#ff3300" strokeWidth="2" strokeDasharray="6,6" className="opacity-40" />
-               {/* Out of Engine to Read Later */}
                <path d="M 600 300 L 720 300" fill="none" stroke="#d4d4d8" strokeWidth="2" strokeDasharray="6,6" />
-               {/* Out of Engine to Auto */}
                <path d="M 600 300 L 650 300 L 650 490 L 720 490" fill="none" stroke="#d4d4d8" strokeWidth="2" strokeDasharray="6,6" />
             </svg>
 
@@ -148,7 +133,6 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Capabilities Banner */}
       <section className="border-y border-neutral-100 bg-neutral-50 py-16 px-8">
         <div className="max-w-[1600px] mx-auto flex flex-col items-center justify-center gap-10">
           <span className="text-sm md:text-base font-mono uppercase tracking-widest text-[#ff3300] font-bold">Platform Capabilities</span>
@@ -161,12 +145,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Redesigned Features Stack */}
-      <section id="features" className="py-32 px-8 md:px-16 max-w-[1600px] mx-auto">
+      <section id="features" className="py-32 px-4 md:px-16 max-w-[1600px] mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-neutral-200 pb-16">
            <div>
               <div className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-8">01 &nbsp; Core Capabilities</div>
-              <h2 className="text-[3rem] md:text-[5rem] font-light tracking-tighter text-black leading-[1]">Built for scale,<br/>designed for focus.</h2>
+              <h2 className="text-4xl md:text-[5rem] font-light tracking-tighter text-black leading-[1]">Built for scale,<br/>designed for focus.</h2>
            </div>
         </div>
         
@@ -203,12 +186,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Comparison Block */}
-      <section id="comparison" className="py-24 px-8 md:px-16 max-w-[1600px] mx-auto">
+      <section id="comparison" className="py-24 px-4 md:px-16 max-w-[1600px] mx-auto">
         <div className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-8">02 &nbsp; Platform Comparison</div>
         
         <div className="flex flex-col md:flex-row h-[800px] md:h-[600px] w-full group/comp cursor-crosshair">
-          {/* SortMail Side */}
           <div className="flex-1 md:hover:flex-[1.5] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] bg-[#ff3300] text-white p-12 md:p-24 relative overflow-hidden flex flex-col justify-end border border-[#ff3300] group/left">
              <div className="absolute top-0 right-0 w-[600px] h-[600px] border border-white/20 rounded-full translate-x-1/4 -translate-y-1/4 flex items-center justify-center group-hover/left:scale-110 transition-transform duration-1000 ease-out">
                 <div className="w-[400px] h-[400px] border border-white/20 rounded-full flex items-center justify-center">
@@ -222,7 +203,6 @@ export default function Home() {
                 </div>
              </div>
              
-             {/* Simulated Fast Processing (Speed Lines) */}
              <div className="absolute inset-0 opacity-0 group-hover/left:opacity-100 transition-opacity duration-700 pointer-events-none">
                 {[1, 2, 3, 4, 5].map(i => (
                   <motion.div 
@@ -237,22 +217,20 @@ export default function Home() {
 
              <div className="relative z-10">
                <p className="text-xs font-mono uppercase tracking-widest mb-4 opacity-80 translate-y-4 group-hover/left:translate-y-0 transition-transform duration-500 ease-out">With SortMail</p>
-               <p className="text-[4rem] sm:text-[5rem] md:text-[7rem] font-light tracking-tighter leading-none group-hover/left:scale-105 origin-bottom-left transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">100% Signal</p>
+               <p className="text-4xl sm:text-[5rem] md:text-[7rem] font-light tracking-tighter leading-none group-hover/left:scale-105 origin-bottom-left transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">100% Signal</p>
                <div className="mt-8 flex items-center gap-2 text-sm font-mono opacity-0 group-hover/left:opacity-100 translate-y-4 group-hover/left:translate-y-0 transition-all duration-700 delay-150">
                  <Check className="w-5 h-5"/> Only see the emails that matter
                </div>
              </div>
           </div>
           
-          {/* Legacy Side */}
           <div className="flex-1 md:hover:flex-[1.5] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] bg-neutral-50 text-black p-12 md:p-24 flex flex-col justify-end border-y md:border-y-0 md:border-r md:border-t md:border-b border-neutral-200 relative overflow-hidden group/right grayscale hover:grayscale-0">
              
-             {/* Messy Data Background Pattern */}
              <div className="absolute inset-0 opacity-10 group-hover/right:opacity-40 transition-opacity duration-700 pointer-events-none bg-[radial-gradient(circle_at_center,_#000_1px,_transparent_1px)] bg-[size:15px_15px]" />
              
              <div className="relative z-10">
                <p className="text-xs font-mono uppercase tracking-widest mb-4 text-neutral-400 translate-y-4 group-hover/right:translate-y-0 transition-transform duration-500 ease-out">Legacy Mail Clients</p>
-               <p className="text-[4rem] sm:text-[5rem] md:text-[7rem] font-light tracking-tighter text-neutral-300 leading-none group-hover/right:scale-105 origin-bottom-left transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/right:text-neutral-800">99% Noise</p>
+               <p className="text-4xl sm:text-[5rem] md:text-[7rem] font-light tracking-tighter text-neutral-300 leading-none group-hover/right:scale-105 origin-bottom-left transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/right:text-neutral-800">99% Noise</p>
                <div className="mt-8 flex items-center gap-2 text-sm font-mono text-neutral-400 opacity-0 group-hover/right:opacity-100 translate-y-4 group-hover/right:translate-y-0 transition-all duration-700 delay-150">
                   Drowning in promotional blasts
                </div>
@@ -261,10 +239,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section id="faq" className="py-32 px-8 md:px-16 max-w-[1000px] mx-auto">
+      <section id="faq" className="py-32 px-4 md:px-16 max-w-[1000px] mx-auto">
         <div className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-8 text-center">03 &nbsp; Frequently Asked Questions</div>
-        <h2 className="text-[3rem] md:text-[4rem] font-light tracking-tighter mb-16 text-black leading-[1] text-center">We solved email,<br/>so you don't have to.</h2>
+        <h2 className="text-4xl md:text-[4rem] font-light tracking-tighter mb-16 text-black leading-[1] text-center">We solved email,<br/>so you don't have to.</h2>
         
         <div className="border-t border-neutral-200">
           {faqs.map((faq, i) => (
@@ -290,14 +267,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Massive Call to Action */}
       <section className="bg-[#ff3300] py-32 px-8 flex flex-col items-center justify-center text-center">
         <h2 className="text-5xl md:text-[7rem] font-light tracking-tighter mb-12 text-white leading-[0.9]">Ready to stop<br/>sorting?</h2>
         <LoginButton variant="white" />
       </section>
 
-      {/* Robust Footer */}
-      <footer className="bg-neutral-950 text-white pt-24 pb-12 px-8 md:px-16">
+      <footer className="bg-neutral-950 text-white pt-24 pb-12 px-4 md:px-16">
         <div className="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-24 border-b border-neutral-800 pb-24">
           <div className="col-span-1 md:col-span-2">
             <div className="text-3xl font-bold tracking-tighter mb-6 flex items-center gap-2">

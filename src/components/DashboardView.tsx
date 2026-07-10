@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, LogOut, Mail, Settings, Zap, Clock } from "lucide-react";
+import { CheckCircle, LogOut, Mail, Settings, Zap, Clock, Menu, X, ArrowLeft } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -9,7 +9,6 @@ import toast from 'react-hot-toast';
 export default function DashboardView({ emails, sessionEmail }: { emails: any[], sessionEmail: string }) {
   const router = useRouter();
 
-  // Auto-polling for new emails every 15 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       router.refresh();
@@ -17,6 +16,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
     return () => clearInterval(interval);
   }, [router]);
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("inbox");
   const [selectedEmail, setSelectedEmail] = useState<any | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -57,7 +57,6 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
     }
   }, [activeTab]);
 
-  // AutoHandler State
   const [ruleCategory, setRuleCategory] = useState("internship");
   const [ruleInstructions, setRuleInstructions] = useState("");
   const [targetSenders, setTargetSenders] = useState("*");
@@ -175,23 +174,25 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
   });
 
   return (
-    <div className="flex h-screen bg-[#fafafa] font-sans text-black">
-      {/* Sidebar */}
-      <div className="w-64 bg-white border-r border-neutral-200 flex flex-col justify-between shrink-0">
+    <div className="flex h-screen bg-[#fafafa] font-sans text-black relative">
+      {isMobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setIsMobileMenuOpen(false)} />
+      )}
+      <div className={`fixed md:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-neutral-200 flex flex-col justify-between shrink-0 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div>
           <div className="p-8 border-b border-neutral-100 mb-4">
              <h1 className="text-2xl font-bold tracking-tighter hover:text-[#ff3300] transition-colors cursor-pointer">SortMail</h1>
              <p className="text-[10px] font-mono text-neutral-400 mt-2 truncate">{sessionEmail}</p>
           </div>
           <nav className="flex flex-col gap-2 px-4">
-            <button onClick={() => { setActiveTab("inbox"); setSelectedEmail(null); }} className={`flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors rounded-md ${activeTab === 'inbox' ? 'bg-[#ff3300] text-white' : 'text-neutral-600 hover:bg-neutral-50'}`}>
+            <button onClick={() => { setActiveTab("inbox"); setSelectedEmail(null); setIsMobileMenuOpen(false); }} className={`flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors rounded-md ${activeTab === 'inbox' ? 'bg-[#ff3300] text-white' : 'text-neutral-600 hover:bg-neutral-50'}`}>
                <div className="flex items-center gap-3"><Mail className="w-4 h-4"/> Inbox</div>
                <span className="text-[10px] opacity-70">{emails.length}</span>
             </button>
-            <button onClick={() => { setActiveTab("action"); setSelectedEmail(null); }} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors rounded-md ${activeTab === 'action' ? 'bg-[#ff3300] text-white' : 'text-neutral-600 hover:bg-neutral-50'}`}><Zap className="w-4 h-4"/> Needs Action</button>
-            <button onClick={() => { setActiveTab("readlater"); setSelectedEmail(null); }} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors rounded-md ${activeTab === 'readlater' ? 'bg-[#ff3300] text-white' : 'text-neutral-600 hover:bg-neutral-50'}`}><CheckCircle className="w-4 h-4"/> Read Later</button>
+            <button onClick={() => { setActiveTab("action"); setSelectedEmail(null); setIsMobileMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors rounded-md ${activeTab === 'action' ? 'bg-[#ff3300] text-white' : 'text-neutral-600 hover:bg-neutral-50'}`}><Zap className="w-4 h-4"/> Needs Action</button>
+            <button onClick={() => { setActiveTab("readlater"); setSelectedEmail(null); setIsMobileMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors rounded-md ${activeTab === 'readlater' ? 'bg-[#ff3300] text-white' : 'text-neutral-600 hover:bg-neutral-50'}`}><CheckCircle className="w-4 h-4"/> Read Later</button>
             <div className="h-px bg-neutral-100 my-2 mx-4" />
-            <button onClick={() => { setActiveTab("autohandler"); setSelectedEmail(null); }} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors rounded-md ${activeTab === 'autohandler' ? 'bg-[#ff3300] text-white' : 'text-neutral-600 hover:bg-neutral-50'}`}><Settings className="w-4 h-4"/> Auto-Handler</button>
+            <button onClick={() => { setActiveTab("autohandler"); setSelectedEmail(null); setIsMobileMenuOpen(false); }} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors rounded-md ${activeTab === 'autohandler' ? 'bg-[#ff3300] text-white' : 'text-neutral-600 hover:bg-neutral-50'}`}><Settings className="w-4 h-4"/> Auto-Handler</button>
           </nav>
         </div>
         <div className="p-4 border-t border-neutral-200">
@@ -201,23 +202,23 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Header */}
-        <header className="h-20 border-b border-neutral-200 bg-white flex items-center px-8 justify-between shrink-0">
-          <h2 className="text-xl font-light capitalize">{activeTab.replace("readlater", "Read Later").replace("autohandler", "Auto-Handler Rules")}</h2>
+        <header className="h-20 border-b border-neutral-200 bg-white flex items-center px-4 md:px-8 justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <button className="md:hidden p-2 -ml-2 text-neutral-600" onClick={() => setIsMobileMenuOpen(true)}>
+              <Menu className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg md:text-xl font-light capitalize">{activeTab.replace("readlater", "Read Later").replace("autohandler", "Auto-Handler Rules")}</h2>
+          </div>
           <div className="text-xs font-mono uppercase tracking-widest text-neutral-400">
              {activeTab === 'inbox' || activeTab === 'action' || activeTab === 'readlater' ? `${filteredEmails.length} Items` : 'Configuration'}
           </div>
         </header>
 
-        {/* Content Area */}
-        <div className="flex-1 flex overflow-hidden">
-           {/* Email List */}
+        <div className="flex-1 flex overflow-hidden relative">
            {(activeTab === 'inbox' || activeTab === 'action' || activeTab === 'readlater') && (
-             <div className={`flex flex-col border-r border-neutral-200 bg-[#fafafa] flex-shrink-0 transition-all duration-300 ease-in-out ${selectedEmail ? 'w-[400px]' : 'w-full'} custom-scrollbar`}>
+             <div className={`flex flex-col border-r border-neutral-200 bg-[#fafafa] flex-shrink-0 transition-all duration-300 ease-in-out ${selectedEmail ? 'hidden md:flex md:w-[400px]' : 'w-full md:w-[400px]'} custom-scrollbar`}>
 
-               {/* Filtering Bar for Inbox */}
                {activeTab === 'inbox' && (
                  <div className="p-4 border-b border-neutral-200 bg-white flex gap-2 overflow-x-auto custom-scrollbar shrink-0">
                    <button
@@ -226,7 +227,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                    >
                      All
                    </button>
-                   {['internship', 'youtube', 'newsletter', 'personal', 'other'].map(cat => (
+                   {['internship', 'youtube', 'newsletter', 'personal', 'social', 'finance', 'scam', 'other'].map(cat => (
                      <button
                        key={cat}
                        onClick={() => setSelectedCategory(cat)}
@@ -251,7 +252,6 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                      <h3 className="text-base font-medium mb-2 line-clamp-1 text-black">{email.subject}</h3>
                      <p className="text-sm text-neutral-500 line-clamp-2 leading-relaxed mb-4">{email.snippet}</p>
 
-                     {/* Capsule Badges */}
                      <div className="flex gap-2 items-center flex-wrap">
                         <span className={`px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest ${email.needsReply ? 'bg-[#ff3300]/10 text-[#ff3300] border border-[#ff3300]/20' : 'bg-neutral-100 text-neutral-500 border border-neutral-200'}`}>
                            {email.category}
@@ -271,9 +271,8 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
              </div>
            )}
 
-           {/* Email Detail Reading Pane */}
            {(activeTab === 'inbox' || activeTab === 'action' || activeTab === 'readlater') && selectedEmail && (
-             <div className="flex-1 bg-white overflow-y-auto p-12 custom-scrollbar">
+             <div className="flex-1 bg-white overflow-y-auto p-4 md:p-12 custom-scrollbar w-full absolute inset-0 md:static z-10">
                 <div className="max-w-3xl mx-auto">
                    <h2 className="text-3xl font-light tracking-tight mb-8 text-black">{selectedEmail.subject}</h2>
                    <div className="flex items-center justify-between border-b border-neutral-100 pb-6 mb-8">
@@ -347,9 +346,8 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
              </div>
            )}
 
-           {/* Settings / Auto Handler View */}
            {activeTab === 'autohandler' && (
-             <div className="flex-1 p-12 overflow-y-auto bg-[#fafafa] custom-scrollbar">
+             <div className="flex-1 p-4 md:p-12 overflow-y-auto bg-[#fafafa] custom-scrollbar">
                <div className="max-w-7xl mx-auto">
                  <h2 className="text-4xl font-light tracking-tighter mb-4 text-black">Auto-Handler Engine</h2>
                  <p className="text-neutral-500 mb-12 text-sm leading-relaxed max-w-2xl">
@@ -358,7 +356,6 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                  </p>
 
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                   {/* Left Col: Rule Config */}
                    <div className="border border-neutral-200 rounded-sm p-10 bg-white shadow-sm flex flex-col justify-between">
                       <div>
                         <h3 className="text-xl font-bold mb-8 text-black uppercase tracking-tight">Create Automation Rule</h3>
@@ -375,6 +372,9 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                                   <option value="youtube">YouTube Sponsorship / Collab</option>
                                   <option value="newsletter">Newsletter</option>
                                   <option value="personal">Personal / Direct Contact</option>
+                                  <option value="social">Social Media</option>
+                                  <option value="finance">Finance / Bills / Receipts</option>
+                                  <option value="scam">Spam / Scam / Phishing</option>
                                   <option value="other">Other / General</option>
                                </select>
                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-neutral-400">
@@ -403,7 +403,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                           </div>
                           <div>
                             <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">Cloudinary Attachment (Optional)</label>
-                            <label className="border-2 border-dashed border-neutral-300 rounded-none p-12 flex flex-col items-center justify-center bg-[#fafafa] cursor-pointer hover:bg-neutral-100 hover:border-black transition-all relative group">
+                            <label className="border-2 border-dashed border-neutral-300 rounded-none p-6 md:p-12 flex flex-col items-center justify-center bg-[#fafafa] cursor-pointer hover:bg-neutral-100 hover:border-black transition-all relative group">
                                <input type="file" className="hidden" onChange={handleFileUpload} />
                                {uploading ? (
                                  <div className="flex flex-col items-center gap-2">
@@ -440,9 +440,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                       </div>
                    </div>
 
-                   {/* Right Col: Manual Execute & History Box */}
-                   <div className="flex flex-col gap-6 h-full max-h-[850px]">
-                     {/* Rules List */}
+                   <div className="flex flex-col gap-6 h-full lg:max-h-[850px]">
                      <div className="border border-neutral-200 rounded-sm p-8 bg-white shadow-sm flex flex-col flex-1 min-h-[400px]">
                        <div className="mb-6 shrink-0">
                          <h3 className="text-xl font-bold mb-3 text-black uppercase tracking-tight flex items-center gap-3">
@@ -482,7 +480,6 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                        </div>
                      </div>
 
-                     {/* Transmission History */}
                      <div className="border border-neutral-200 rounded-sm p-6 bg-white shadow-sm flex flex-col h-[280px]">
                        <h3 className="text-sm font-bold mb-4 text-black uppercase tracking-tight flex items-center gap-2 border-b border-neutral-100 pb-3">
                          <Clock className="w-4 h-4 text-neutral-400" /> Transmission History

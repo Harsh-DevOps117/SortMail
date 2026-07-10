@@ -9,7 +9,7 @@ export interface IEmail extends Document {
   subject: string;
   snippet: string;
   htmlBody?: string;
-  category: 'internship' | 'youtube' | 'newsletter' | 'personal' | 'other';
+  category: 'internship' | 'youtube' | 'newsletter' | 'personal' | 'social' | 'finance' | 'scam' | 'other';
   needsReply: boolean;
   receivedAt: Date;
   isAutoReplied: boolean;
@@ -26,17 +26,16 @@ const EmailSchema: Schema = new Schema({
   htmlBody: { type: String },
   category: { 
     type: String, 
-    enum: ['internship', 'youtube', 'newsletter', 'personal', 'other'],
+    enum: ['internship', 'youtube', 'newsletter', 'personal', 'social', 'finance', 'scam', 'other'],
     default: 'other'
   },
   needsReply: { type: Boolean, default: false },
   receivedAt: { type: Date, default: Date.now },
   isAutoReplied: { type: Boolean, default: false }
 }, {
-  timestamps: true // Adds createdAt, updatedAt automatically
+  timestamps: true 
 });
 
-// Create compound index for faster fetching for the UI
 EmailSchema.index({ userId: 1, category: 1, receivedAt: -1 });
 
 export default mongoose.models.Email || mongoose.model<IEmail>('Email', EmailSchema);

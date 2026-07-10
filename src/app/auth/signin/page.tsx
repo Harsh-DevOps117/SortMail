@@ -11,13 +11,11 @@ function SignInContent() {
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center p-4 font-sans selection:bg-[#ff3300] selection:text-white">
       <div className="w-full max-w-md">
-        {/* Logo / Brand */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold tracking-tighter text-black mb-2 uppercase">SortMail</h1>
           <p className="text-neutral-500 font-mono text-xs uppercase tracking-widest">Autonomous Triage Engine</p>
         </div>
 
-        {/* Login Box */}
         <div className="bg-white border border-neutral-200 rounded-sm p-8 md:p-12 shadow-sm relative">
            <h2 className="text-2xl font-bold tracking-tight text-black mb-2">Welcome Back</h2>
            <p className="text-sm text-neutral-500 mb-8 leading-relaxed">
@@ -44,7 +42,6 @@ function SignInContent() {
            </button>
         </div>
 
-        {/* Footer */}
         <p className="text-center text-[10px] font-mono text-neutral-400 mt-12 uppercase tracking-widest">
           Secured by NextAuth & OAuth 2.0
         </p>

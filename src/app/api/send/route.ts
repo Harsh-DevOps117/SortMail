@@ -11,14 +11,14 @@ export async function POST(request: Request) {
 
   try {
     const { to, subject, content } = await request.json();
-    
-    if (!to || !subject || !content) {
+
+        if (!to || !subject || !content) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     const replySubject = subject.startsWith('Re:') ? subject : `Re: ${subject}`;
-    
-    await sendEmail(session.user.email, to, replySubject, content, content);
+
+        await sendEmail(session.user.email, to, replySubject, content, content);
 
     return NextResponse.json({ success: true });
   } catch (error) {

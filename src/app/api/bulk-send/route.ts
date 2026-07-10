@@ -20,15 +20,14 @@ export async function POST(request: Request) {
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     const { category, instructions, targetSenders, attachmentUrl } = await request.json();
-    
-    if (!targetSenders || !instructions) {
+
+        if (!targetSenders || !instructions) {
       return NextResponse.json({ error: 'Missing required configuration fields' }, { status: 400 });
     }
 
     let successCount = 0;
-    
-    if (targetSenders === '*') {
-      // Find senders from DB matching category that need reply
+
+        if (targetSenders === '*') {
       const emailsToReply = await Email.find({ userId: user._id, category, needsReply: true });
       if (emailsToReply.length === 0) {
         return NextResponse.json({ error: `No unhandled emails found in the '${category}' category.` }, { status: 400 });
@@ -41,11 +40,11 @@ export async function POST(request: Request) {
           if (attachmentUrl) {
              finalBody += `<br><br><a href="${attachmentUrl}">View Attached Document</a>`;
           }
-          
-          const match = email.senderEmail.match(/<(.+)>/);
+
+                    const match = email.senderEmail.match(/<(.+)>/);
           const toEmail = match ? match[1] : email.senderEmail;
-          
-          await sendEmail(session.user.email, toEmail, draft.subject, finalBody, finalBody);
+
+                    await sendEmail(session.user.email, toEmail, draft.subject, finalBody, finalBody);
           email.needsReply = false;
           await email.save();
           successCount++;
@@ -62,7 +61,6 @@ export async function POST(request: Request) {
       });
 
     } else {
-      // Broadcast to explicit targets
       const targets = targetSenders.split(',').map((s: string) => s.trim()).filter(Boolean);
       if (targets.length === 0) {
         return NextResponse.json({ error: 'Invalid target senders' }, { status: 400 });
@@ -82,8 +80,8 @@ export async function POST(request: Request) {
            console.error(`Failed to send bulk email to ${target}`, err);
         }
       }
-      
-      await BulkHistory.create({
+
+            await BulkHistory.create({
         userId: user._id,
         category,
         targetCount: successCount,
