@@ -3,14 +3,13 @@ import GoogleProvider from "next-auth/providers/google"
 import connectToDatabase from "@/lib/mongodb"
 import User from "@/models/User"
 
-const handler = NextAuth({
+export const authOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
         params: {
-          // Ask for email, profile, and Gmail modification rights
           scope: "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/gmail.modify",
           prompt: "consent",
           access_type: "offline",
@@ -20,11 +19,10 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account, profile }: any) {
       if (account?.provider === "google") {
         await connectToDatabase();
         
-        // Find or create user in our MongoDB Atlas
         let existingUser = await User.findOne({ googleId: user.id });
         
         if (!existingUser) {
@@ -35,7 +33,6 @@ const handler = NextAuth({
           });
         }
         
-        // Save the access and refresh tokens so our backend can read their Gmail
         existingUser.accessToken = account.access_token || existingUser.accessToken;
         if (account.refresh_token) {
           existingUser.refreshToken = account.refresh_token;
@@ -48,6 +45,8 @@ const handler = NextAuth({
     }
   },
   secret: process.env.NEXTAUTH_SECRET || "development-secret-change-in-production",
-})
+};
 
-export { handler as GET, handler as POST }
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };
