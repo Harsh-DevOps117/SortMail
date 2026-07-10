@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, LogOut, Mail, Settings, Zap } from "lucide-react";
+import { CheckCircle, LogOut, Mail, Settings, Zap, Clock } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
