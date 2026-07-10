@@ -20,9 +20,15 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
   const [selectedEmail, setSelectedEmail] = useState<any | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  // Reply State
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyContent, setReplyContent] = useState("");
+  const [sendingReply, setSendingReply] = useState(false);
+
   // AutoHandler State
   const [ruleCategory, setRuleCategory] = useState("internship");
   const [ruleInstructions, setRuleInstructions] = useState("");
+  const [targetSenders, setTargetSenders] = useState("*");
   const [uploading, setUploading] = useState(false);
   const [attachmentUrl, setAttachmentUrl] = useState("");
   const [saveStatus, setSaveStatus] = useState("");
@@ -51,13 +57,43 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
     }
   };
 
+  const handleSendReply = async () => {
+    if (!selectedEmail || !replyContent) return;
+    setSendingReply(true);
+    try {
+      const match = selectedEmail.senderEmail.match(/<(.+)>/);
+      const toEmail = match ? match[1] : selectedEmail.senderEmail;
+      
+      const res = await fetch("/api/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          to: toEmail, 
+          subject: selectedEmail.subject, 
+          content: replyContent 
+        }),
+      });
+      if (res.ok) {
+        setIsReplying(false);
+        setReplyContent("");
+        alert("Reply sent successfully!");
+      } else {
+        alert("Failed to send reply.");
+      }
+    } catch (err) {
+      alert("Error sending reply.");
+    } finally {
+      setSendingReply(false);
+    }
+  };
+
   const handleSaveRule = async () => {
     setSaveStatus("Saving...");
     try {
       const res = await fetch("/api/autorules", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category: ruleCategory, instructions: ruleInstructions, attachmentUrl }),
+        body: JSON.stringify({ category: ruleCategory, instructions: ruleInstructions, targetSenders, attachmentUrl }),
       });
       if (res.ok) {
         setSaveStatus("Rule saved successfully!");
@@ -186,12 +222,32 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                          <div className="font-bold text-sm text-black">{selectedEmail.senderEmail}</div>
                          <div className="text-xs text-neutral-500 mt-1">To: {sessionEmail}</div>
                       </div>
-                      {selectedEmail.needsReply && (
-                        <button className="bg-[#ff3300] text-white px-6 py-2 text-xs font-mono uppercase tracking-widest rounded-sm shadow-sm hover:bg-[#e62e00] transition-colors">
+                      {!isReplying && selectedEmail.needsReply && (
+                        <button onClick={() => setIsReplying(true)} className="bg-[#ff3300] text-white px-6 py-2 text-xs font-mono uppercase tracking-widest rounded-sm shadow-sm hover:bg-[#e62e00] transition-colors">
                           Reply Now
                         </button>
                       )}
                    </div>
+                   
+                   {isReplying && (
+                     <div className="mb-8 border-2 border-black p-6 bg-[#fafafa]">
+                       <h4 className="text-xs font-mono uppercase tracking-widest mb-4 font-bold text-black">Drafting Reply to {selectedEmail.senderEmail}</h4>
+                       <textarea 
+                         className="w-full border border-neutral-300 p-4 min-h-[150px] outline-none focus:border-[#ff3300] mb-4 text-sm"
+                         placeholder="Type your reply here..."
+                         value={replyContent}
+                         onChange={(e) => setReplyContent(e.target.value)}
+                       />
+                       <div className="flex justify-end gap-3">
+                         <button onClick={() => setIsReplying(false)} className="px-4 py-2 text-xs font-mono uppercase tracking-widest text-neutral-500 hover:text-black transition-colors">
+                           Cancel
+                         </button>
+                         <button onClick={handleSendReply} disabled={sendingReply} className="bg-black text-white px-6 py-2 text-xs font-mono uppercase tracking-widest rounded-sm hover:bg-neutral-800 transition-colors disabled:opacity-50">
+                           {sendingReply ? "Sending..." : "Send Reply"}
+                         </button>
+                       </div>
+                     </div>
+                   )}
                    
                    <div className="w-full mt-8 border border-neutral-200 rounded-sm overflow-hidden h-[600px] bg-white">
                       {selectedEmail.htmlBody ? (
@@ -243,6 +299,16 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                              ▼
                            </div>
                         </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">Target Senders / Bulk Audience</label>
+                        <input 
+                           type="text"
+                           value={targetSenders}
+                           onChange={(e) => setTargetSenders(e.target.value)}
+                           className="w-full border-2 border-neutral-200 p-4 rounded-none bg-[#fafafa] outline-none focus:border-[#ff3300] text-sm font-mono" 
+                           placeholder="Use * for all senders, or enter specific emails separated by commas"
+                        />
                       </div>
                       <div>
                         <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">System Prompt Instructions</label>

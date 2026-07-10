@@ -16,12 +16,12 @@ export async function POST(request: Request) {
     const user = await User.findOne({ email: session.user.email });
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    const { category, instructions, attachmentUrl } = await request.json();
+    const { category, instructions, targetSenders, attachmentUrl } = await request.json();
 
     // Upsert rule based on category (one rule per category)
     const rule = await AutoRule.findOneAndUpdate(
       { userId: user._id, category },
-      { instructions, attachmentUrl, createdAt: new Date() },
+      { instructions, targetSenders: targetSenders || '*', attachmentUrl, createdAt: new Date() },
       { upsert: true, new: true }
     );
 

@@ -4,6 +4,7 @@ export interface IAutoRule extends Document {
   userId: mongoose.Types.ObjectId;
   category: string;
   instructions: string;
+  targetSenders: string;
   attachmentUrl?: string;
   createdAt: Date;
 }
@@ -12,6 +13,7 @@ const autoRuleSchema = new Schema<IAutoRule>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   category: { type: String, required: true },
   instructions: { type: String, required: true },
+  targetSenders: { type: String, default: '*' },
   attachmentUrl: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
