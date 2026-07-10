@@ -308,7 +308,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                        </div>
 
                        <textarea
-                         className="w-full border-2 border-neutral-200 p-4 min-h-[250px] outline-none focus:border-[#ff3300] mb-4 text-sm font-mono leading-relaxed bg-[#fafafa]"
+                         className="w-full border-2 border-neutral-200 p-5 min-h-[250px] outline-none focus:border-[#ff3300] mb-4 text-[15px] font-sans leading-relaxed text-black bg-[#fafafa] resize-y"
                          placeholder="Type your reply here..."
                          value={replyContent}
                          onChange={(e) => setReplyContent(e.target.value)}
@@ -337,8 +337,10 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                         />
                       ) : (
                         <div className="p-6 md:p-8 h-full bg-neutral-50 flex flex-col justify-between">
-                           <div className="text-black font-mono text-sm leading-relaxed whitespace-pre-wrap p-6 md:p-10 border border-neutral-200 bg-white shadow-sm h-full overflow-y-auto custom-scrollbar">
-                             {selectedEmail.snippet}
+                           <div className="text-neutral-800 font-sans text-[15px] md:text-base leading-loose whitespace-pre-wrap p-6 md:p-12 border border-neutral-200 bg-white shadow-sm h-full overflow-y-auto custom-scrollbar">
+                             <div className="max-w-prose mx-auto">
+                               {selectedEmail.snippet}
+                             </div>
                            </div>
                            <div className="mt-4 flex items-center justify-between border-t border-neutral-200 pt-4">
                              <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold flex items-center gap-2"><Settings className="w-3 h-3"/> Plain Text Fallback</span>
