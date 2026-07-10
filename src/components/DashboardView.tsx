@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from "next-auth/react";
 import { Mail, Settings, Clock, LogOut, CheckCircle, Zap } from "lucide-react";
+import toast from 'react-hot-toast';
 
 export default function DashboardView({ emails, sessionEmail }: { emails: any[], sessionEmail: string }) {
   const router = useRouter();
@@ -20,11 +21,11 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
   const [selectedEmail, setSelectedEmail] = useState<any | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // Reply State
   const [isReplying, setIsReplying] = useState(false);
   const [replySubject, setReplySubject] = useState("");
   const [replyContent, setReplyContent] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
+  const [isBulkSending, setIsBulkSending] = useState(false);
 
   // AutoHandler State
   const [ruleCategory, setRuleCategory] = useState("internship");
@@ -77,19 +78,19 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
       if (res.ok) {
         setIsReplying(false);
         setReplyContent("");
-        alert("Reply sent successfully!");
+        toast.success("Reply sent successfully!");
       } else {
-        alert("Failed to send reply.");
+        toast.error("Failed to send reply.");
       }
     } catch (err) {
-      alert("Error sending reply.");
+      toast.error("Error sending reply.");
     } finally {
       setSendingReply(false);
     }
   };
 
   const handleSaveRule = async () => {
-    setSaveStatus("Saving...");
+    const toastId = toast.loading("Saving automation rule...");
     try {
       const res = await fetch("/api/autorules", {
         method: "POST",
@@ -97,13 +98,38 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
         body: JSON.stringify({ category: ruleCategory, instructions: ruleInstructions, targetSenders, attachmentUrl }),
       });
       if (res.ok) {
-        setSaveStatus("Rule saved successfully!");
-        setTimeout(() => setSaveStatus(""), 3000);
+        toast.success("Rule saved successfully!", { id: toastId });
       } else {
-        setSaveStatus("Failed to save.");
+        toast.error("Failed to save rule.", { id: toastId });
       }
     } catch (err) {
-      setSaveStatus("Error saving.");
+      toast.error("Error saving rule.", { id: toastId });
+    }
+  };
+
+  const handleBulkSend = async () => {
+    if (!targetSenders || targetSenders === '*') {
+      toast.error("Please specify explicit email addresses for manual bulk trigger (e.g., example@domain.com).");
+      return;
+    }
+    setIsBulkSending(true);
+    const toastId = toast.loading("Executing Bulk Send...");
+    try {
+      const res = await fetch("/api/bulk-send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category: ruleCategory, instructions: ruleInstructions, targetSenders, attachmentUrl }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`Successfully blasted to ${data.sentCount} targets!`, { id: toastId });
+      } else {
+        toast.error(data.error || "Failed to trigger bulk send.", { id: toastId });
+      }
+    } catch (err) {
+      toast.error("Error triggering bulk send.", { id: toastId });
+    } finally {
+      setIsBulkSending(false);
     }
   };
 
@@ -292,95 +318,130 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
            {/* Settings / Auto Handler View */}
            {activeTab === 'autohandler' && (
              <div className="flex-1 p-12 overflow-y-auto bg-[#fafafa] custom-scrollbar">
-               <div className="max-w-5xl mx-auto">
+               <div className="max-w-7xl mx-auto">
                  <h2 className="text-4xl font-light tracking-tighter mb-4 text-black">Auto-Handler Engine</h2>
                  <p className="text-neutral-500 mb-12 text-sm leading-relaxed max-w-2xl">
                     Configure the AI to autonomously draft and send replies to specific email classifications. 
                     Upload high-resolution PDFs or Images securely to Cloudinary, and the LLM will attach them to outgoing emails matching your criteria.
                  </p>
                  
-                 <div className="border border-neutral-200 rounded-sm p-10 bg-white mb-8 shadow-sm">
-                    <h3 className="text-xl font-bold mb-8 text-black uppercase tracking-tight">Create Automation Rule</h3>
-                    <div className="space-y-8">
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                   {/* Left Col: Rule Config */}
+                   <div className="border border-neutral-200 rounded-sm p-10 bg-white shadow-sm flex flex-col justify-between">
                       <div>
-                        <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">If AI Category Matches...</label>
-                        <div className="relative">
-                           <select 
-                              value={ruleCategory}
-                              onChange={(e) => setRuleCategory(e.target.value)}
-                              className="w-full border-2 border-neutral-200 p-4 rounded-none bg-[#fafafa] text-black outline-none focus:border-[#ff3300] appearance-none font-medium"
-                           >
-                              <option value="internship">Internship Application / Reply</option>
-                              <option value="youtube">YouTube Sponsorship / Collab</option>
-                              <option value="newsletter">Newsletter</option>
-                              <option value="personal">Personal / Direct Contact</option>
-                              <option value="other">Other / General</option>
-                           </select>
-                           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-neutral-400">
-                             ▼
-                           </div>
+                        <h3 className="text-xl font-bold mb-8 text-black uppercase tracking-tight">Create Automation Rule</h3>
+                        <div className="space-y-8">
+                          <div>
+                            <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">If AI Category Matches...</label>
+                            <div className="relative">
+                               <select 
+                                  value={ruleCategory}
+                                  onChange={(e) => setRuleCategory(e.target.value)}
+                                  className="w-full border-2 border-neutral-200 p-4 rounded-none bg-[#fafafa] text-black outline-none focus:border-[#ff3300] appearance-none font-medium"
+                               >
+                                  <option value="internship">Internship Application / Reply</option>
+                                  <option value="youtube">YouTube Sponsorship / Collab</option>
+                                  <option value="newsletter">Newsletter</option>
+                                  <option value="personal">Personal / Direct Contact</option>
+                                  <option value="other">Other / General</option>
+                               </select>
+                               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-neutral-400">
+                                 ▼
+                               </div>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">Target Senders / Bulk Audience</label>
+                            <input 
+                               type="text"
+                               value={targetSenders}
+                               onChange={(e) => setTargetSenders(e.target.value)}
+                               className="w-full border-2 border-neutral-200 p-4 rounded-none bg-[#fafafa] outline-none focus:border-[#ff3300] text-sm font-mono" 
+                               placeholder="Use * for all senders, or enter specific emails separated by commas"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">System Prompt Instructions</label>
+                            <textarea 
+                               value={ruleInstructions}
+                               onChange={(e) => setRuleInstructions(e.target.value)}
+                               className="w-full border-2 border-neutral-200 p-5 rounded-none bg-[#fafafa] h-40 outline-none focus:border-[#ff3300] text-sm leading-relaxed font-mono" 
+                               placeholder="E.g., You are my autonomous agent. Thank them for reaching out and state that I am currently open to new roles. Please refer them to my attached resume..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">Cloudinary Attachment (Optional)</label>
+                            <label className="border-2 border-dashed border-neutral-300 rounded-none p-12 flex flex-col items-center justify-center bg-[#fafafa] cursor-pointer hover:bg-neutral-100 hover:border-black transition-all relative group">
+                               <input type="file" className="hidden" onChange={handleFileUpload} />
+                               {uploading ? (
+                                 <div className="flex flex-col items-center gap-2">
+                                   <div className="w-6 h-6 border-2 border-[#ff3300] border-t-transparent rounded-full animate-spin"></div>
+                                   <span className="text-xs font-mono uppercase tracking-widest text-[#ff3300]">Uploading...</span>
+                                 </div>
+                               ) : attachmentUrl ? (
+                                 <div className="flex flex-col items-center gap-2">
+                                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-2">✓</div>
+                                   <span className="text-sm font-bold text-green-700 truncate w-full text-center">Securely Attached</span>
+                                   <span className="text-[10px] font-mono text-neutral-400 truncate max-w-[200px]">{attachmentUrl}</span>
+                                 </div>
+                               ) : (
+                                 <>
+                                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-neutral-200 mb-4 group-hover:scale-110 transition-transform">
+                                      <Zap className="w-5 h-5 text-neutral-400" />
+                                   </div>
+                                   <span className="text-sm font-bold text-black mb-1">Click to upload Media</span>
+                                   <span className="text-xs text-neutral-500 max-w-[250px] text-center">PDFs, Images, or Documents. Delivered via zero-latency Cloudinary CDN.</span>
+                                 </>
+                               )}
+                            </label>
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">Target Senders / Bulk Audience</label>
-                        <input 
-                           type="text"
-                           value={targetSenders}
-                           onChange={(e) => setTargetSenders(e.target.value)}
-                           className="w-full border-2 border-neutral-200 p-4 rounded-none bg-[#fafafa] outline-none focus:border-[#ff3300] text-sm font-mono" 
-                           placeholder="Use * for all senders, or enter specific emails separated by commas"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">System Prompt Instructions</label>
-                        <textarea 
-                           value={ruleInstructions}
-                           onChange={(e) => setRuleInstructions(e.target.value)}
-                           className="w-full border-2 border-neutral-200 p-5 rounded-none bg-[#fafafa] h-40 outline-none focus:border-[#ff3300] text-sm leading-relaxed font-mono" 
-                           placeholder="E.g., You are my autonomous agent. Thank them for reaching out and state that I am currently open to new roles. Please refer them to my attached resume..."
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">Cloudinary Attachment (Optional)</label>
-                        <label className="border-2 border-dashed border-neutral-300 rounded-none p-12 flex flex-col items-center justify-center bg-[#fafafa] cursor-pointer hover:bg-neutral-100 hover:border-black transition-all relative group">
-                           <input type="file" className="hidden" onChange={handleFileUpload} />
-                           {uploading ? (
-                             <div className="flex flex-col items-center gap-2">
-                               <div className="w-6 h-6 border-2 border-[#ff3300] border-t-transparent rounded-full animate-spin"></div>
-                               <span className="text-xs font-mono uppercase tracking-widest text-[#ff3300]">Uploading...</span>
-                             </div>
-                           ) : attachmentUrl ? (
-                             <div className="flex flex-col items-center gap-2">
-                               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-2">✓</div>
-                               <span className="text-sm font-bold text-green-700 truncate w-full text-center">Securely Attached</span>
-                               <span className="text-[10px] font-mono text-neutral-400 truncate max-w-[200px]">{attachmentUrl}</span>
-                             </div>
-                           ) : (
-                             <>
-                               <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-neutral-200 mb-4 group-hover:scale-110 transition-transform">
-                                  <Zap className="w-5 h-5 text-neutral-400" />
-                               </div>
-                               <span className="text-sm font-bold text-black mb-1">Click to upload Media</span>
-                               <span className="text-xs text-neutral-500 max-w-[250px] text-center">PDFs, Images, or Documents. Delivered via zero-latency Cloudinary CDN.</span>
-                             </>
-                           )}
-                        </label>
-                      </div>
                       
-                      <div className="pt-4">
+                      <div className="pt-8 mt-8 border-t border-neutral-200">
                         <button 
                           onClick={handleSaveRule}
-                          className="bg-[#ff3300] text-white px-8 py-5 text-sm font-bold uppercase tracking-widest rounded-none w-full hover:bg-black transition-colors flex items-center justify-center gap-2"
+                          className="bg-black text-white px-8 py-5 text-sm font-bold uppercase tracking-widest rounded-none w-full hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
                         >
-                          <Settings className="w-4 h-4"/> Deploy Automation Rule
+                          <Settings className="w-4 h-4"/> Save Automation Rule
                         </button>
-                        {saveStatus && (
-                           <div className={`text-xs font-mono uppercase tracking-widest mt-4 text-center ${saveStatus.includes('success') ? 'text-green-600' : 'text-[#ff3300]'}`}>
-                              {saveStatus}
-                           </div>
-                        )}
                       </div>
-                    </div>
+                   </div>
+
+                   {/* Right Col: Manual Execute Box */}
+                   <div className="border-2 border-black p-10 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between">
+                     <div>
+                       <h3 className="text-xl font-bold mb-4 text-black uppercase tracking-tight flex items-center gap-3">
+                         <Zap className="w-6 h-6 text-[#ff3300]" /> Manual Override
+                       </h3>
+                       <p className="text-sm text-neutral-600 mb-8 leading-relaxed font-mono">
+                         Do not wait for autonomous triggering. Force the Engine to blast out your configured System Prompt Instructions and Attachments directly to the Target Senders defined in your rule.
+                       </p>
+
+                       <div className="bg-neutral-50 border border-neutral-200 p-6 mb-8 font-mono text-xs text-neutral-500 flex flex-col gap-3">
+                          <div className="flex justify-between border-b border-neutral-200 pb-2">
+                             <span className="uppercase tracking-widest">Rule Selected</span>
+                             <span className="font-bold text-black">{ruleCategory}</span>
+                          </div>
+                          <div className="flex justify-between border-b border-neutral-200 pb-2">
+                             <span className="uppercase tracking-widest">Target</span>
+                             <span className="font-bold text-[#ff3300] max-w-[150px] truncate">{targetSenders}</span>
+                          </div>
+                          <div className="flex justify-between">
+                             <span className="uppercase tracking-widest">Attachment</span>
+                             <span className="font-bold text-black">{attachmentUrl ? 'Attached' : 'None'}</span>
+                          </div>
+                       </div>
+                     </div>
+
+                     <button 
+                       onClick={handleBulkSend}
+                       disabled={isBulkSending}
+                       className="bg-[#ff3300] text-white px-8 py-5 text-sm font-bold uppercase tracking-widest rounded-none w-full hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                     >
+                       {isBulkSending ? "Transmitting..." : "Execute Bulk Send"}
+                     </button>
+                   </div>
                  </div>
                </div>
              </div>
