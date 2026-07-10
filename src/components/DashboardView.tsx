@@ -21,7 +21,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // AutoHandler State
-  const [ruleCategory, setRuleCategory] = useState("Recruiter / Job Pitch");
+  const [ruleCategory, setRuleCategory] = useState("internship");
   const [ruleInstructions, setRuleInstructions] = useState("");
   const [uploading, setUploading] = useState(false);
   const [attachmentUrl, setAttachmentUrl] = useState("");
@@ -97,7 +97,6 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
             <button onClick={() => { setActiveTab("readlater"); setSelectedEmail(null); }} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors rounded-md ${activeTab === 'readlater' ? 'bg-[#ff3300] text-white' : 'text-neutral-600 hover:bg-neutral-50'}`}><CheckCircle className="w-4 h-4"/> Read Later</button>
             <div className="h-px bg-neutral-100 my-2 mx-4" />
             <button onClick={() => { setActiveTab("autohandler"); setSelectedEmail(null); }} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors rounded-md ${activeTab === 'autohandler' ? 'bg-[#ff3300] text-white' : 'text-neutral-600 hover:bg-neutral-50'}`}><Settings className="w-4 h-4"/> Auto-Handler</button>
-            <button onClick={() => { setActiveTab("scheduled"); setSelectedEmail(null); }} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors rounded-md ${activeTab === 'scheduled' ? 'bg-[#ff3300] text-white' : 'text-neutral-600 hover:bg-neutral-50'}`}><Clock className="w-4 h-4"/> Scheduled</button>
           </nav>
         </div>
         <div className="p-4 border-t border-neutral-200">
@@ -215,76 +214,88 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
 
            {/* Settings / Auto Handler View */}
            {activeTab === 'autohandler' && (
-             <div className="flex-1 p-12 overflow-y-auto bg-white custom-scrollbar">
+             <div className="flex-1 p-12 overflow-y-auto bg-[#fafafa] custom-scrollbar">
                <div className="max-w-3xl mx-auto">
-                 <h2 className="text-3xl font-light tracking-tight mb-4 text-black">Auto-Handler Rules</h2>
-                 <p className="text-neutral-500 mb-12 leading-relaxed">Configure the AI to automatically reply to specific types of emails. You can also attach files securely via Cloudinary, and the LLM will send them automatically when a matching email arrives.</p>
+                 <h2 className="text-4xl font-light tracking-tighter mb-4 text-black">Auto-Handler Engine</h2>
+                 <p className="text-neutral-500 mb-12 text-sm leading-relaxed max-w-2xl">
+                    Configure the AI to autonomously draft and send replies to specific email classifications. 
+                    Upload high-resolution PDFs or Images securely to Cloudinary, and the LLM will attach them to outgoing emails matching your criteria.
+                 </p>
                  
-                 <div className="border border-neutral-200 rounded-xl p-8 bg-neutral-50 mb-8 shadow-sm">
-                    <h3 className="text-lg font-medium mb-6 text-black border-b border-neutral-200 pb-4">Create New Rule</h3>
-                    <div className="space-y-6">
+                 <div className="border border-black rounded-sm p-10 bg-white mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <h3 className="text-xl font-bold mb-8 text-black uppercase tracking-tight">Create Automation Rule</h3>
+                    <div className="space-y-8">
                       <div>
-                        <label className="block text-xs font-mono uppercase tracking-widest text-neutral-500 mb-2">If AI Category Is...</label>
-                        <select 
-                           value={ruleCategory}
-                           onChange={(e) => setRuleCategory(e.target.value)}
-                           className="w-full border border-neutral-200 p-3 rounded-md bg-white text-black outline-none focus:border-[#ff3300]"
-                        >
-                           <option>Recruiter / Job Pitch</option>
-                           <option>Client Inquiry</option>
-                           <option>Invoice Request</option>
-                        </select>
+                        <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">If AI Category Matches...</label>
+                        <div className="relative">
+                           <select 
+                              value={ruleCategory}
+                              onChange={(e) => setRuleCategory(e.target.value)}
+                              className="w-full border-2 border-neutral-200 p-4 rounded-none bg-[#fafafa] text-black outline-none focus:border-[#ff3300] appearance-none font-medium"
+                           >
+                              <option value="internship">Internship Application / Reply</option>
+                              <option value="youtube">YouTube Sponsorship / Collab</option>
+                              <option value="newsletter">Newsletter</option>
+                              <option value="personal">Personal / Direct Contact</option>
+                              <option value="other">Other / General</option>
+                           </select>
+                           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-neutral-400">
+                             ▼
+                           </div>
+                        </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-mono uppercase tracking-widest text-neutral-500 mb-2">AI Reply Instructions</label>
+                        <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">System Prompt Instructions</label>
                         <textarea 
                            value={ruleInstructions}
                            onChange={(e) => setRuleInstructions(e.target.value)}
-                           className="w-full border border-neutral-200 p-4 rounded-md bg-white h-32 outline-none focus:border-[#ff3300]" 
-                           placeholder="E.g., Thank them for reaching out and say I am currently open to new roles. Please review my attached resume..."
+                           className="w-full border-2 border-neutral-200 p-5 rounded-none bg-[#fafafa] h-40 outline-none focus:border-[#ff3300] text-sm leading-relaxed font-mono" 
+                           placeholder="E.g., You are my autonomous agent. Thank them for reaching out and state that I am currently open to new roles. Please refer them to my attached resume..."
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-mono uppercase tracking-widest text-neutral-500 mb-2">Cloudinary Attachment (Optional)</label>
-                        <label className="border-2 border-dashed border-neutral-300 rounded-md p-10 flex flex-col items-center justify-center bg-white cursor-pointer hover:bg-neutral-50 transition-colors relative">
+                        <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">Cloudinary Attachment (Optional)</label>
+                        <label className="border-2 border-dashed border-neutral-300 rounded-none p-12 flex flex-col items-center justify-center bg-[#fafafa] cursor-pointer hover:bg-neutral-100 hover:border-black transition-all relative group">
                            <input type="file" className="hidden" onChange={handleFileUpload} />
                            {uploading ? (
-                             <span className="text-sm font-medium text-[#ff3300]">Uploading to Cloudinary...</span>
+                             <div className="flex flex-col items-center gap-2">
+                               <div className="w-6 h-6 border-2 border-[#ff3300] border-t-transparent rounded-full animate-spin"></div>
+                               <span className="text-xs font-mono uppercase tracking-widest text-[#ff3300]">Uploading...</span>
+                             </div>
                            ) : attachmentUrl ? (
-                             <span className="text-sm font-medium text-green-600 truncate w-full text-center">✓ File Attached</span>
+                             <div className="flex flex-col items-center gap-2">
+                               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-2">✓</div>
+                               <span className="text-sm font-bold text-green-700 truncate w-full text-center">Securely Attached</span>
+                               <span className="text-[10px] font-mono text-neutral-400 truncate max-w-[200px]">{attachmentUrl}</span>
+                             </div>
                            ) : (
                              <>
-                               <span className="text-sm font-medium text-neutral-600 mb-1">Click to upload PDF or Image</span>
-                               <span className="text-xs text-neutral-400">Files are securely stored via Cloudinary APIs</span>
+                               <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-neutral-200 mb-4 group-hover:scale-110 transition-transform">
+                                  <Zap className="w-5 h-5 text-neutral-400" />
+                               </div>
+                               <span className="text-sm font-bold text-black mb-1">Click to upload Media</span>
+                               <span className="text-xs text-neutral-500 max-w-[250px] text-center">PDFs, Images, or Documents. Delivered via zero-latency Cloudinary CDN.</span>
                              </>
                            )}
                         </label>
                       </div>
-                      <button 
-                        onClick={handleSaveRule}
-                        className="bg-black text-white px-6 py-4 text-xs font-mono uppercase tracking-widest rounded-sm w-full hover:bg-neutral-800 transition-colors mt-4"
-                      >
-                        Save Auto-Handler Rule
-                      </button>
-                      {saveStatus && (
-                         <div className={`text-sm font-medium mt-2 text-center ${saveStatus.includes('success') ? 'text-green-600' : 'text-[#ff3300]'}`}>
-                            {saveStatus}
-                         </div>
-                      )}
+                      
+                      <div className="pt-4">
+                        <button 
+                          onClick={handleSaveRule}
+                          className="bg-[#ff3300] text-white px-8 py-5 text-sm font-bold uppercase tracking-widest rounded-none w-full hover:bg-black transition-colors flex items-center justify-center gap-2"
+                        >
+                          <Settings className="w-4 h-4"/> Deploy Automation Rule
+                        </button>
+                        {saveStatus && (
+                           <div className={`text-xs font-mono uppercase tracking-widest mt-4 text-center ${saveStatus.includes('success') ? 'text-green-600' : 'text-[#ff3300]'}`}>
+                              {saveStatus}
+                           </div>
+                        )}
+                      </div>
                     </div>
                  </div>
                </div>
-             </div>
-           )}
-
-           {/* Scheduled Outbox */}
-           {activeTab === 'scheduled' && (
-             <div className="flex-1 p-12 overflow-y-auto bg-white flex items-center justify-center">
-                <div className="text-center">
-                  <Clock className="w-16 h-16 text-neutral-200 mx-auto mb-6" />
-                  <h3 className="text-2xl font-light mb-2 text-black">No Scheduled Emails</h3>
-                  <p className="text-neutral-500 max-w-sm mx-auto">Emails that you have scheduled for future autonomous delivery will appear here.</p>
-                </div>
              </div>
            )}
 
