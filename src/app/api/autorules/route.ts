@@ -5,6 +5,18 @@ import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 import AutoRule from "@/models/AutoRule";
 
+export async function GET(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  await connectMongo();
+  const user = await User.findOne({ email: session.user.email });
+  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  const rules = await AutoRule.find({ userId: user._id });
+  return NextResponse.json(rules);
+}
+
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.email) {

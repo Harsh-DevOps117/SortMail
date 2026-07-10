@@ -39,7 +39,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {children}
-        <Toaster position="bottom-right" toastOptions={{ className: 'font-mono text-sm uppercase tracking-widest rounded-none border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' }} />
+        <Toaster position="bottom-right" toastOptions={{ className: 'font-mono text-sm uppercase tracking-widest rounded-sm border border-neutral-200 shadow-sm' }} />
       </body>
     </html>
   );

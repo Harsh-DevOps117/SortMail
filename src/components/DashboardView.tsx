@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { CheckCircle, LogOut, Mail, Settings, Zap } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { Mail, Settings, Clock, LogOut, CheckCircle, Zap } from "lucide-react";
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function DashboardView({ emails, sessionEmail }: { emails: any[], sessionEmail: string }) {
@@ -27,6 +27,24 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
   const [sendingReply, setSendingReply] = useState(false);
   const [isBulkSending, setIsBulkSending] = useState(false);
 
+  const [savedRules, setSavedRules] = useState<any[]>([]);
+
+  const fetchRules = async () => {
+    try {
+      const res = await fetch("/api/autorules");
+      if (res.ok) {
+        const data = await res.json();
+        setSavedRules(data);
+      }
+    } catch (err) {}
+  };
+
+  useEffect(() => {
+    if (activeTab === 'autohandler') {
+      fetchRules();
+    }
+  }, [activeTab]);
+
   // AutoHandler State
   const [ruleCategory, setRuleCategory] = useState("internship");
   const [ruleInstructions, setRuleInstructions] = useState("");
@@ -39,10 +57,10 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
     setUploading(true);
-    
+
     const formData = new FormData();
     formData.append("file", file);
-    
+
     try {
       const res = await fetch("/api/upload", {
         method: "POST",
@@ -65,14 +83,14 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
     try {
       const match = selectedEmail.senderEmail.match(/<(.+)>/);
       const toEmail = match ? match[1] : selectedEmail.senderEmail;
-      
+
       const res = await fetch("/api/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          to: toEmail, 
-          subject: replySubject || selectedEmail.subject, 
-          content: replyContent 
+        body: JSON.stringify({
+          to: toEmail,
+          subject: replySubject || selectedEmail.subject,
+          content: replyContent
         }),
       });
       if (res.ok) {
@@ -99,6 +117,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
       });
       if (res.ok) {
         toast.success("Rule saved successfully!", { id: toastId });
+        fetchRules();
       } else {
         toast.error("Failed to save rule.", { id: toastId });
       }
@@ -107,8 +126,8 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
     }
   };
 
-  const handleBulkSend = async () => {
-    if (!targetSenders || targetSenders === '*') {
+  const handleBulkSend = async (rule: any) => {
+    if (!rule.targetSenders || rule.targetSenders === '*') {
       toast.error("Please specify explicit email addresses for manual bulk trigger (e.g., example@domain.com).");
       return;
     }
@@ -118,7 +137,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
       const res = await fetch("/api/bulk-send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category: ruleCategory, instructions: ruleInstructions, targetSenders, attachmentUrl }),
+        body: JSON.stringify(rule),
       });
       const data = await res.json();
       if (res.ok) {
@@ -184,18 +203,18 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
            {/* Email List */}
            {(activeTab === 'inbox' || activeTab === 'action' || activeTab === 'readlater') && (
              <div className={`flex flex-col border-r border-neutral-200 bg-[#fafafa] flex-shrink-0 transition-all duration-300 ease-in-out ${selectedEmail ? 'w-[400px]' : 'w-full'} custom-scrollbar`}>
-               
+
                {/* Filtering Bar for Inbox */}
                {activeTab === 'inbox' && (
                  <div className="p-4 border-b border-neutral-200 bg-white flex gap-2 overflow-x-auto custom-scrollbar shrink-0">
-                   <button 
+                   <button
                      onClick={() => setSelectedCategory(null)}
                      className={`px-3 py-1.5 rounded-full text-xs font-mono uppercase tracking-widest whitespace-nowrap transition-colors ${!selectedCategory ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200'}`}
                    >
                      All
                    </button>
                    {['internship', 'youtube', 'newsletter', 'personal', 'other'].map(cat => (
-                     <button 
+                     <button
                        key={cat}
                        onClick={() => setSelectedCategory(cat)}
                        className={`px-3 py-1.5 rounded-full text-xs font-mono uppercase tracking-widest whitespace-nowrap transition-colors ${selectedCategory === cat ? 'bg-[#ff3300] text-white border border-[#ff3300]/20' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 border border-transparent'}`}
@@ -208,8 +227,8 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
 
                <div className="overflow-y-auto flex-1 custom-scrollbar">
                  {filteredEmails.map((email, idx) => (
-                   <div 
-                     key={idx} 
+                   <div
+                     key={idx}
                      onClick={() => setSelectedEmail(email)}
                      className={`p-6 border-b border-neutral-200 cursor-pointer transition-colors ${selectedEmail?.id === email.id ? 'bg-white border-l-4 border-l-[#ff3300]' : 'hover:bg-white border-l-4 border-l-transparent'}`}
                    >
@@ -218,7 +237,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                      </div>
                      <h3 className="text-base font-medium mb-2 line-clamp-1 text-black">{email.subject}</h3>
                      <p className="text-sm text-neutral-500 line-clamp-2 leading-relaxed mb-4">{email.snippet}</p>
-                     
+
                      {/* Capsule Badges */}
                      <div className="flex gap-2 items-center flex-wrap">
                         <span className={`px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest ${email.needsReply ? 'bg-[#ff3300]/10 text-[#ff3300] border border-[#ff3300]/20' : 'bg-neutral-100 text-neutral-500 border border-neutral-200'}`}>
@@ -255,16 +274,16 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                         </button>
                       )}
                    </div>
-                   
+
                    {isReplying && (
                      <div className="mb-8 border border-neutral-200 p-6 bg-white shadow-sm rounded-sm">
                        <div className="flex items-center justify-between border-b-2 border-neutral-100 pb-4 mb-4">
                           <h4 className="text-sm font-bold uppercase tracking-widest text-black flex items-center gap-2">
-                            <Zap className="w-4 h-4 text-[#ff3300]" /> 
+                            <Zap className="w-4 h-4 text-[#ff3300]" />
                             Drafting Reply
                           </h4>
                        </div>
-                       
+
                        <div className="space-y-4 mb-4">
                           <div className="flex items-center gap-4">
                              <label className="w-16 text-xs font-mono uppercase tracking-widest text-neutral-400">To:</label>
@@ -276,7 +295,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                           </div>
                        </div>
 
-                       <textarea 
+                       <textarea
                          className="w-full border-2 border-neutral-200 p-4 min-h-[250px] outline-none focus:border-[#ff3300] mb-4 text-sm font-mono leading-relaxed bg-[#fafafa]"
                          placeholder="Type your reply here..."
                          value={replyContent}
@@ -295,10 +314,10 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                        </div>
                      </div>
                    )}
-                   
+
                    <div className="w-full mt-8 border border-neutral-200 rounded-sm overflow-hidden h-[600px] bg-white">
                       {selectedEmail.htmlBody ? (
-                        <iframe 
+                        <iframe
                            title="Email Content"
                            srcDoc={selectedEmail.htmlBody}
                            className="w-full h-full border-none"
@@ -321,10 +340,10 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                <div className="max-w-7xl mx-auto">
                  <h2 className="text-4xl font-light tracking-tighter mb-4 text-black">Auto-Handler Engine</h2>
                  <p className="text-neutral-500 mb-12 text-sm leading-relaxed max-w-2xl">
-                    Configure the AI to autonomously draft and send replies to specific email classifications. 
+                    Configure the AI to autonomously draft and send replies to specific email classifications.
                     Upload high-resolution PDFs or Images securely to Cloudinary, and the LLM will attach them to outgoing emails matching your criteria.
                  </p>
-                 
+
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                    {/* Left Col: Rule Config */}
                    <div className="border border-neutral-200 rounded-sm p-10 bg-white shadow-sm flex flex-col justify-between">
@@ -334,7 +353,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                           <div>
                             <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">If AI Category Matches...</label>
                             <div className="relative">
-                               <select 
+                               <select
                                   value={ruleCategory}
                                   onChange={(e) => setRuleCategory(e.target.value)}
                                   className="w-full border-2 border-neutral-200 p-4 rounded-none bg-[#fafafa] text-black outline-none focus:border-[#ff3300] appearance-none font-medium"
@@ -352,20 +371,20 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                           </div>
                           <div>
                             <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">Target Senders / Bulk Audience</label>
-                            <input 
+                            <input
                                type="text"
                                value={targetSenders}
                                onChange={(e) => setTargetSenders(e.target.value)}
-                               className="w-full border-2 border-neutral-200 p-4 rounded-none bg-[#fafafa] outline-none focus:border-[#ff3300] text-sm font-mono" 
+                               className="w-full border-2 border-neutral-200 p-4 rounded-none bg-[#fafafa] outline-none focus:border-[#ff3300] text-sm font-mono"
                                placeholder="Use * for all senders, or enter specific emails separated by commas"
                             />
                           </div>
                           <div>
                             <label className="block text-xs font-mono uppercase tracking-widest text-black mb-3">System Prompt Instructions</label>
-                            <textarea 
+                            <textarea
                                value={ruleInstructions}
                                onChange={(e) => setRuleInstructions(e.target.value)}
-                               className="w-full border-2 border-neutral-200 p-5 rounded-none bg-[#fafafa] h-40 outline-none focus:border-[#ff3300] text-sm leading-relaxed font-mono" 
+                               className="w-full border-2 border-neutral-200 p-5 rounded-none bg-[#fafafa] h-40 outline-none focus:border-[#ff3300] text-sm leading-relaxed font-mono"
                                placeholder="E.g., You are my autonomous agent. Thank them for reaching out and state that I am currently open to new roles. Please refer them to my attached resume..."
                             />
                           </div>
@@ -397,9 +416,9 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="pt-8 mt-8 border-t border-neutral-200">
-                        <button 
+                        <button
                           onClick={handleSaveRule}
                           className="bg-black text-white px-8 py-5 text-sm font-bold uppercase tracking-widest rounded-none w-full hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
                         >
@@ -409,38 +428,43 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                    </div>
 
                    {/* Right Col: Manual Execute Box */}
-                   <div className="border-2 border-black p-10 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between">
-                     <div>
+                   <div className="border border-neutral-200 rounded-sm p-10 bg-white shadow-sm flex flex-col h-full max-h-[850px]">
+                     <div className="mb-8 shrink-0">
                        <h3 className="text-xl font-bold mb-4 text-black uppercase tracking-tight flex items-center gap-3">
-                         <Zap className="w-6 h-6 text-[#ff3300]" /> Manual Override
+                         <Zap className="w-6 h-6 text-[#ff3300]" /> Deployed Rules
                        </h3>
-                       <p className="text-sm text-neutral-600 mb-8 leading-relaxed font-mono">
-                         Do not wait for autonomous triggering. Force the Engine to blast out your configured System Prompt Instructions and Attachments directly to the Target Senders defined in your rule.
+                       <p className="text-sm text-neutral-600 leading-relaxed font-mono">
+                         Trigger your active automation rules manually. Blast out configured instructions directly to target senders without waiting for autonomous processing.
                        </p>
-
-                       <div className="bg-neutral-50 border border-neutral-200 p-6 mb-8 font-mono text-xs text-neutral-500 flex flex-col gap-3">
-                          <div className="flex justify-between border-b border-neutral-200 pb-2">
-                             <span className="uppercase tracking-widest">Rule Selected</span>
-                             <span className="font-bold text-black">{ruleCategory}</span>
-                          </div>
-                          <div className="flex justify-between border-b border-neutral-200 pb-2">
-                             <span className="uppercase tracking-widest">Target</span>
-                             <span className="font-bold text-[#ff3300] max-w-[150px] truncate">{targetSenders}</span>
-                          </div>
-                          <div className="flex justify-between">
-                             <span className="uppercase tracking-widest">Attachment</span>
-                             <span className="font-bold text-black">{attachmentUrl ? 'Attached' : 'None'}</span>
-                          </div>
-                       </div>
                      </div>
 
-                     <button 
-                       onClick={handleBulkSend}
-                       disabled={isBulkSending}
-                       className="bg-[#ff3300] text-white px-8 py-5 text-sm font-bold uppercase tracking-widest rounded-none w-full hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                     >
-                       {isBulkSending ? "Transmitting..." : "Execute Bulk Send"}
-                     </button>
+                     <div className="flex-1 overflow-y-auto space-y-6 custom-scrollbar pr-4">
+                       {savedRules.length === 0 ? (
+                         <div className="p-8 text-center text-neutral-400 font-mono text-xs uppercase tracking-widest border-2 border-dashed border-neutral-200">
+                           No rules deployed yet.
+                         </div>
+                       ) : (
+                         savedRules.map((rule, idx) => (
+                           <div key={idx} className="bg-neutral-50 border border-neutral-200 p-6 font-mono text-xs text-neutral-500 flex flex-col gap-4 hover:border-black transition-colors">
+                              <div className="flex justify-between items-center border-b border-neutral-200 pb-3">
+                                 <span className="uppercase tracking-widest font-bold text-black text-sm">{rule.category}</span>
+                                 {rule.attachmentUrl && <span className="bg-green-100 text-green-700 px-3 py-1 text-[10px] rounded-full shadow-sm">Attached</span>}
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                 <span className="uppercase tracking-widest opacity-60">Target Senders</span>
+                                 <span className="font-bold text-[#ff3300] break-all">{rule.targetSenders}</span>
+                              </div>
+                              <button
+                                onClick={() => handleBulkSend(rule)}
+                                disabled={isBulkSending}
+                                className="mt-4 bg-[#ff3300] text-white px-4 py-4 text-[10px] font-bold uppercase tracking-widest rounded-none w-full hover:bg-black transition-colors disabled:opacity-50"
+                              >
+                                {isBulkSending ? "Transmitting..." : "Execute Bulk Send"}
+                              </button>
+                           </div>
+                         ))
+                       )}
+                     </div>
                    </div>
                  </div>
                </div>
