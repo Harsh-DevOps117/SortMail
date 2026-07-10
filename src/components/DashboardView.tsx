@@ -22,6 +22,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
 
   // Reply State
   const [isReplying, setIsReplying] = useState(false);
+  const [replySubject, setReplySubject] = useState("");
   const [replyContent, setReplyContent] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
 
@@ -69,7 +70,7 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           to: toEmail, 
-          subject: selectedEmail.subject, 
+          subject: replySubject || selectedEmail.subject, 
           content: replyContent 
         }),
       });
@@ -223,28 +224,48 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                          <div className="text-xs text-neutral-500 mt-1">To: {sessionEmail}</div>
                       </div>
                       {!isReplying && selectedEmail.needsReply && (
-                        <button onClick={() => setIsReplying(true)} className="bg-[#ff3300] text-white px-6 py-2 text-xs font-mono uppercase tracking-widest rounded-sm shadow-sm hover:bg-[#e62e00] transition-colors">
+                        <button onClick={() => { setIsReplying(true); setReplySubject(selectedEmail.subject.startsWith('Re:') ? selectedEmail.subject : 'Re: ' + selectedEmail.subject); }} className="bg-[#ff3300] text-white px-6 py-2 text-xs font-mono uppercase tracking-widest rounded-sm shadow-sm hover:bg-[#e62e00] transition-colors">
                           Reply Now
                         </button>
                       )}
                    </div>
                    
                    {isReplying && (
-                     <div className="mb-8 border-2 border-black p-6 bg-[#fafafa]">
-                       <h4 className="text-xs font-mono uppercase tracking-widest mb-4 font-bold text-black">Drafting Reply to {selectedEmail.senderEmail}</h4>
+                     <div className="mb-8 border border-neutral-200 p-6 bg-white shadow-sm rounded-sm">
+                       <div className="flex items-center justify-between border-b-2 border-neutral-100 pb-4 mb-4">
+                          <h4 className="text-sm font-bold uppercase tracking-widest text-black flex items-center gap-2">
+                            <Zap className="w-4 h-4 text-[#ff3300]" /> 
+                            Drafting Reply
+                          </h4>
+                       </div>
+                       
+                       <div className="space-y-4 mb-4">
+                          <div className="flex items-center gap-4">
+                             <label className="w-16 text-xs font-mono uppercase tracking-widest text-neutral-400">To:</label>
+                             <input type="text" readOnly value={selectedEmail.senderEmail} className="flex-1 bg-neutral-50 border border-neutral-200 p-2 text-sm text-neutral-600 outline-none cursor-not-allowed" />
+                          </div>
+                          <div className="flex items-center gap-4">
+                             <label className="w-16 text-xs font-mono uppercase tracking-widest text-neutral-400">Subj:</label>
+                             <input type="text" value={replySubject} onChange={(e) => setReplySubject(e.target.value)} className="flex-1 bg-white border border-neutral-300 p-2 text-sm text-black outline-none focus:border-[#ff3300]" />
+                          </div>
+                       </div>
+
                        <textarea 
-                         className="w-full border border-neutral-300 p-4 min-h-[150px] outline-none focus:border-[#ff3300] mb-4 text-sm"
+                         className="w-full border-2 border-neutral-200 p-4 min-h-[250px] outline-none focus:border-[#ff3300] mb-4 text-sm font-mono leading-relaxed bg-[#fafafa]"
                          placeholder="Type your reply here..."
                          value={replyContent}
                          onChange={(e) => setReplyContent(e.target.value)}
                        />
-                       <div className="flex justify-end gap-3">
-                         <button onClick={() => setIsReplying(false)} className="px-4 py-2 text-xs font-mono uppercase tracking-widest text-neutral-500 hover:text-black transition-colors">
-                           Cancel
-                         </button>
-                         <button onClick={handleSendReply} disabled={sendingReply} className="bg-black text-white px-6 py-2 text-xs font-mono uppercase tracking-widest rounded-sm hover:bg-neutral-800 transition-colors disabled:opacity-50">
-                           {sendingReply ? "Sending..." : "Send Reply"}
-                         </button>
+                       <div className="flex justify-between items-center mt-4">
+                         <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">Powered by Gmail API</span>
+                         <div className="flex gap-3">
+                           <button onClick={() => setIsReplying(false)} className="px-6 py-3 text-xs font-mono uppercase tracking-widest text-black hover:bg-neutral-100 transition-colors border border-transparent hover:border-neutral-200">
+                             Cancel
+                           </button>
+                           <button onClick={handleSendReply} disabled={sendingReply} className="bg-[#ff3300] text-white px-8 py-3 text-xs font-bold uppercase tracking-widest shadow-sm hover:bg-black transition-all disabled:opacity-50">
+                             {sendingReply ? "Sending..." : "Send Reply"}
+                           </button>
+                         </div>
                        </div>
                      </div>
                    )}
@@ -271,14 +292,14 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
            {/* Settings / Auto Handler View */}
            {activeTab === 'autohandler' && (
              <div className="flex-1 p-12 overflow-y-auto bg-[#fafafa] custom-scrollbar">
-               <div className="max-w-3xl mx-auto">
+               <div className="max-w-5xl mx-auto">
                  <h2 className="text-4xl font-light tracking-tighter mb-4 text-black">Auto-Handler Engine</h2>
                  <p className="text-neutral-500 mb-12 text-sm leading-relaxed max-w-2xl">
                     Configure the AI to autonomously draft and send replies to specific email classifications. 
                     Upload high-resolution PDFs or Images securely to Cloudinary, and the LLM will attach them to outgoing emails matching your criteria.
                  </p>
                  
-                 <div className="border border-black rounded-sm p-10 bg-white mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                 <div className="border border-neutral-200 rounded-sm p-10 bg-white mb-8 shadow-sm">
                     <h3 className="text-xl font-bold mb-8 text-black uppercase tracking-tight">Create Automation Rule</h3>
                     <div className="space-y-8">
                       <div>

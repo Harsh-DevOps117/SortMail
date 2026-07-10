@@ -18,7 +18,7 @@ function SignInContent() {
         </div>
 
         {/* Login Box */}
-        <div className="bg-white border-2 border-black p-8 md:p-12 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative">
+        <div className="bg-white border border-neutral-200 rounded-sm p-8 md:p-12 shadow-sm relative">
            <h2 className="text-2xl font-bold tracking-tight text-black mb-2">Welcome Back</h2>
            <p className="text-sm text-neutral-500 mb-8 leading-relaxed">
              Authenticate with your Google Workspace or Gmail account to allow the LLM to securely route your inbox.
