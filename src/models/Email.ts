@@ -8,6 +8,7 @@ export interface IEmail extends Document {
   senderName: string;
   subject: string;
   snippet: string;
+  htmlBody?: string;
   category: 'internship' | 'youtube' | 'newsletter' | 'personal' | 'other';
   needsReply: boolean;
   receivedAt: Date;
@@ -22,6 +23,7 @@ const EmailSchema: Schema = new Schema({
   senderName: { type: String },
   subject: { type: String },
   snippet: { type: String },
+  htmlBody: { type: String },
   category: { 
     type: String, 
     enum: ['internship', 'youtube', 'newsletter', 'personal', 'other'],

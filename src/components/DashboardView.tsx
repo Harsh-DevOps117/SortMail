@@ -156,11 +156,20 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                       )}
                    </div>
                    
-                   <div className="prose prose-neutral max-w-none text-neutral-700 leading-loose">
-                      <p>{selectedEmail.snippet}</p>
-                      <div className="mt-12 p-4 bg-neutral-50 border border-neutral-200 text-neutral-400 text-sm italic rounded-md">
-                        Note: Full HTML body rendering requires the payload.parts from Gmail API. Currently showing the LLM-extracted snippet.
-                      </div>
+                   <div className="w-full mt-8 border border-neutral-200 rounded-sm overflow-hidden h-[600px] bg-white">
+                      {selectedEmail.htmlBody ? (
+                        <iframe 
+                           title="Email Content"
+                           srcDoc={selectedEmail.htmlBody}
+                           className="w-full h-full border-none"
+                           sandbox="allow-same-origin allow-popups"
+                        />
+                      ) : (
+                        <div className="p-8 text-neutral-700 leading-loose prose max-w-none">
+                           <p>{selectedEmail.snippet}</p>
+                           <p className="mt-8 text-neutral-400 text-sm italic">Note: Plain text email. No HTML body found.</p>
+                        </div>
+                      )}
                    </div>
                 </div>
              </div>

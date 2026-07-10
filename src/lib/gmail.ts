@@ -4,6 +4,35 @@ import User from '@/models/User';
 import Email from '@/models/Email';
 import { classifyEmail } from './llm';
 
+function extractBody(payload: any): string {
+  if (!payload) return '';
+  
+  if (payload.body?.data) {
+    return Buffer.from(payload.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8');
+  }
+  
+  if (payload.parts) {
+    let htmlPart = payload.parts.find((part: any) => part.mimeType === 'text/html');
+    if (htmlPart && htmlPart.body?.data) {
+      return Buffer.from(htmlPart.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8');
+    }
+    
+    let textPart = payload.parts.find((part: any) => part.mimeType === 'text/plain');
+    if (textPart && textPart.body?.data) {
+      return Buffer.from(textPart.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8');
+    }
+    
+    // Check nested parts (e.g. multipart/alternative inside multipart/mixed)
+    for (const part of payload.parts) {
+      if (part.parts) {
+        const nestedBody = extractBody(part);
+        if (nestedBody) return nestedBody;
+      }
+    }
+  }
+  return '';
+}
+
 export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
   await connectToDatabase();
   
@@ -62,6 +91,8 @@ export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
         const from = fromHeader ? fromHeader.value : 'Unknown';
         const snippet = msgDetail.data.snippet || '';
         const hasUnsubscribe = !!unsubscribeHeader;
+        
+        const htmlBody = extractBody(msgDetail.data.payload);
 
         // 3. Let the LLM Decide the Category & Action!
         // We pass the snippet as the HTML body for now to save tokens, it contains the core context.
@@ -75,6 +106,7 @@ export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
           subject: subject,
           senderEmail: from, // Mongoose schema expects senderEmail, not 'from'
           snippet: snippet,
+          htmlBody: htmlBody,
           category: llmResult.category,
           needsReply: llmResult.needsReply,
           receivedAt: new Date(),
