@@ -75,7 +75,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { page
             {needsActionEmails.map((email, idx) => (
               <div key={idx} className="bg-neutral-50 p-5 border border-neutral-100 hover:border-[#ff3300]/50 transition-colors cursor-pointer group">
                 <div className="flex justify-between items-start mb-3">
-                  <span className="text-xs font-bold text-black truncate max-w-[200px]">{email.from.split('<')[0]}</span>
+                  <span className="text-xs font-bold text-black truncate max-w-[200px]">{email.senderEmail?.split('<')[0] || 'Unknown'}</span>
                 </div>
                 <h3 className="font-medium text-lg text-black mb-2 group-hover:text-[#ff3300] transition-colors line-clamp-1">{email.subject}</h3>
                 <p className="text-sm text-neutral-500 font-light line-clamp-2 leading-relaxed">{email.snippet}</p>
@@ -101,7 +101,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { page
              {readLaterEmails.map((email, idx) => (
               <div key={idx} className="bg-white p-4 border border-neutral-100 hover:bg-neutral-50 transition-colors">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-neutral-700 truncate max-w-[200px]">{email.from.split('<')[0]}</span>
+                  <span className="text-xs font-bold text-neutral-700 truncate max-w-[200px]">{email.senderEmail?.split('<')[0] || 'Unknown'}</span>
                 </div>
                 <h3 className="font-medium text-sm text-black mb-1 line-clamp-1">{email.subject}</h3>
                 <p className="text-xs font-light text-neutral-500 line-clamp-2 mt-2 leading-relaxed">{email.snippet}</p>

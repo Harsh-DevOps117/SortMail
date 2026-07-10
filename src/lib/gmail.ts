@@ -73,11 +73,10 @@ export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
           messageId: msg.id,
           threadId: msgDetail.data.threadId,
           subject: subject,
-          from: from,
+          senderEmail: from, // Mongoose schema expects senderEmail, not 'from'
           snippet: snippet,
           category: llmResult.category,
           needsReply: llmResult.needsReply,
-          status: llmResult.needsReply ? 'action_required' : 'archived',
           receivedAt: new Date(),
         });
 
