@@ -44,6 +44,9 @@ export const authOptions = {
       return false;
     }
   },
+  pages: {
+    signIn: '/auth/signin',
+  },
   secret: process.env.NEXTAUTH_SECRET || "development-secret-change-in-production",
 };
 
