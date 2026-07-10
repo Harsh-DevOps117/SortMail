@@ -1,6 +1,8 @@
 import { google } from 'googleapis';
 import connectToDatabase from './mongodb';
 import User from '@/models/User';
+import Email from '@/models/Email';
+import { classifyEmail } from './llm';
 
 export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
   await connectToDatabase();
@@ -23,22 +25,28 @@ export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
   const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
 
   try {
-    // 1. Fetch unread emails with pagination
     const response = await gmail.users.messages.list({
       userId: 'me',
       q: 'is:unread', 
       maxResults: 15,
-      pageToken: pageToken || undefined, // Pass token if we have it
+      pageToken: pageToken || undefined,
     });
 
     const messages = response.data.messages || [];
-    const nextPageToken = response.data.nextPageToken || null; // Google gives us the next page
+    const nextPageToken = response.data.nextPageToken || null;
     
-    // 2. Fetch the full content
+    // Process emails in parallel
     const detailedEmails = await Promise.all(
       messages.map(async (msg) => {
         if (!msg.id) return null;
+
+        // 1. Check if we already classified and saved this email in MongoDB!
+        const existingEmail = await Email.findOne({ messageId: msg.id });
+        if (existingEmail) {
+          return existingEmail;
+        }
         
+        // 2. If it's new, fetch the full content from Gmail
         const msgDetail = await gmail.users.messages.get({
           userId: 'me',
           id: msg.id,
@@ -50,18 +58,33 @@ export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
         const fromHeader = headers.find(h => h.name === 'From');
         const unsubscribeHeader = headers.find(h => h.name?.toLowerCase() === 'list-unsubscribe');
 
-        return {
-          id: msg.id,
+        const subject = subjectHeader ? subjectHeader.value : 'No Subject';
+        const from = fromHeader ? fromHeader.value : 'Unknown';
+        const snippet = msgDetail.data.snippet || '';
+        const hasUnsubscribe = !!unsubscribeHeader;
+
+        // 3. Let the LLM Decide the Category & Action!
+        // We pass the snippet as the HTML body for now to save tokens, it contains the core context.
+        const llmResult = await classifyEmail(subject || '', snippet, hasUnsubscribe);
+
+        // 4. Save to MongoDB so we never have to run the LLM on this email again
+        const newEmail = await Email.create({
+          userId: user._id,
+          messageId: msg.id,
           threadId: msgDetail.data.threadId,
-          snippet: msgDetail.data.snippet,
-          subject: subjectHeader ? subjectHeader.value : 'No Subject',
-          from: fromHeader ? fromHeader.value : 'Unknown',
-          hasUnsubscribe: !!unsubscribeHeader,
-        };
+          subject: subject,
+          from: from,
+          snippet: snippet,
+          category: llmResult.category,
+          needsReply: llmResult.needsReply,
+          status: llmResult.needsReply ? 'action_required' : 'archived',
+          receivedAt: new Date(),
+        });
+
+        return newEmail;
       })
     );
 
-    // Return both the emails AND the token for the next page
     return {
       emails: detailedEmails.filter(email => email !== null),
       nextPageToken

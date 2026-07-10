@@ -25,61 +25,63 @@ export default async function Dashboard({ searchParams }: { searchParams: { page
     errorMsg = "Failed to load emails from Google. Make sure you granted the Gmail permissions.";
   }
 
-  const needsActionEmails = emails.filter(e => !e.hasUnsubscribe);
-  const readLaterEmails = emails.filter(e => e.hasUnsubscribe);
+  const needsActionEmails = emails.filter(e => e.needsReply === true);
+  const readLaterEmails = emails.filter(e => e.needsReply === false);
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white p-8 font-sans">
-      <header className="mb-10 max-w-[1400px] mx-auto flex justify-between items-end">
-        <div>
-          <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 bg-clip-text text-transparent pb-1">
-            SortMail
-          </h1>
-          <p className="text-neutral-400 mt-1 text-sm font-medium">Welcome back, {session.user.name}</p>
-        </div>
-        
-        {/* Pagination Controls */}
-        <div className="flex gap-4">
-          <Link href="/dashboard" className="px-4 py-2 rounded-lg bg-neutral-900 border border-neutral-800 text-sm font-medium hover:bg-neutral-800 transition-colors shadow-sm">
-            Refresh
-          </Link>
-          {nextPageToken && (
-            <Link href={`/dashboard?pageToken=${nextPageToken}`} className="px-4 py-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-bold hover:bg-indigo-500/20 transition-all shadow-[0_0_10px_rgba(99,102,241,0.1)]">
-              Next Page →
-            </Link>
-          )}
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#fafafa] text-black font-sans selection:bg-[#ff3300] selection:text-white pb-12">
+      
+      {/* Navbar / Header */}
+      <nav className="bg-white border-b border-neutral-200 px-8 py-6 mb-12 flex justify-between items-center sticky top-0 z-50">
+         <div className="flex items-baseline gap-4">
+            <Link href="/" className="text-2xl font-bold tracking-tighter text-black hover:text-[#ff3300] transition-colors">SortMail</Link>
+            <span className="text-neutral-400 font-mono text-xs uppercase tracking-widest hidden md:inline">Triage Dashboard</span>
+         </div>
+         <div className="flex items-center gap-4 md:gap-6">
+            <span className="text-sm font-medium text-neutral-500 hidden md:inline">{session.user.email}</span>
+            <div className="flex gap-3">
+               <Link href="/dashboard" className="px-4 py-3 border border-neutral-200 text-black text-xs font-mono uppercase tracking-widest hover:bg-neutral-50 transition-colors">
+                 Refresh
+               </Link>
+               {nextPageToken && (
+                 <Link href={`/dashboard?pageToken=${nextPageToken}`} className="px-4 py-3 bg-[#ff3300] text-white text-xs font-mono uppercase tracking-widest hover:bg-[#e62e00] transition-colors">
+                   Next Page →
+                 </Link>
+               )}
+            </div>
+         </div>
+      </nav>
 
       {errorMsg && (
-        <div className="max-w-[1400px] mx-auto mb-8 bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl">
-          {errorMsg}
+        <div className="max-w-[1600px] mx-auto mb-8 bg-red-50 border border-red-200 text-red-600 p-4 font-mono text-sm px-8">
+          ERROR: {errorMsg}
         </div>
       )}
 
       {/* Main Grid with Custom Heights for Scrollable Columns */}
-      <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         
         {/* Action Required Column */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-5 shadow-2xl relative overflow-hidden flex flex-col h-[75vh]">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-orange-500" />
-          <div className="flex items-center justify-between mb-4 flex-shrink-0">
-            <h2 className="text-xl font-bold text-red-400">Needs Action</h2>
-            <span className="bg-red-500/10 text-red-400 text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">{needsActionEmails.length}</span>
+        <div className="bg-white border border-[#ff3300]/30 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 relative flex flex-col h-[75vh]">
+          <div className="absolute top-0 left-0 w-full h-1 bg-[#ff3300]" />
+          <div className="flex items-center justify-between mb-6 flex-shrink-0 border-b border-neutral-100 pb-4">
+            <h2 className="text-xl font-light tracking-tight text-black">Action Required</h2>
+            <span className="bg-[#ff3300] text-white text-[10px] px-2 py-1 font-mono uppercase tracking-widest">{needsActionEmails.length} Items</span>
           </div>
           
-          <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-grow pb-4">
-            {needsActionEmails.length === 0 && <p className="text-neutral-500 text-sm text-center mt-10">No action required right now!</p>}
+          <div className="space-y-3 overflow-y-auto pr-2 custom-scrollbar flex-grow pb-4">
+            {needsActionEmails.length === 0 && <p className="text-neutral-400 font-mono text-xs uppercase tracking-widest text-center mt-10">Inbox Zero</p>}
             
             {needsActionEmails.map((email, idx) => (
-              <div key={idx} className="bg-neutral-950 p-4 rounded-2xl border border-neutral-800 hover:border-red-500/50 transition-all duration-300 cursor-pointer group hover:shadow-[0_0_20px_rgba(239,68,68,0.1)]">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-semibold text-neutral-300 truncate max-w-[200px]">{email.from.split('<')[0]}</span>
+              <div key={idx} className="bg-neutral-50 p-5 border border-neutral-100 hover:border-[#ff3300]/50 transition-colors cursor-pointer group">
+                <div className="flex justify-between items-start mb-3">
+                  <span className="text-xs font-bold text-black truncate max-w-[200px]">{email.from.split('<')[0]}</span>
                 </div>
-                <h3 className="font-bold text-base text-neutral-100 mb-1.5 group-hover:text-white transition-colors line-clamp-1">{email.subject}</h3>
-                <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">{email.snippet}</p>
-                <div className="mt-3 flex gap-2">
-                  <span className="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">Reply Required</span>
+                <h3 className="font-medium text-lg text-black mb-2 group-hover:text-[#ff3300] transition-colors line-clamp-1">{email.subject}</h3>
+                <p className="text-sm text-neutral-500 font-light line-clamp-2 leading-relaxed">{email.snippet}</p>
+                <div className="mt-4 flex gap-3 items-center">
+                  <span className="text-[10px] text-[#ff3300] font-mono uppercase tracking-widest font-bold">● Reply</span>
+                  <span className="text-[10px] text-neutral-400 font-mono uppercase tracking-widest">{email.category}</span>
                 </div>
               </div>
             ))}
@@ -87,37 +89,38 @@ export default async function Dashboard({ searchParams }: { searchParams: { page
         </div>
 
         {/* Read Later Column */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-5 flex flex-col h-[75vh]">
-          <div className="flex items-center justify-between mb-4 flex-shrink-0">
-            <h2 className="text-xl font-bold text-blue-400">FYI / Read Later</h2>
-             <span className="bg-blue-500/10 text-blue-400 text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">{readLaterEmails.length}</span>
+        <div className="bg-white border border-neutral-200 p-6 flex flex-col h-[75vh]">
+          <div className="flex items-center justify-between mb-6 flex-shrink-0 border-b border-neutral-100 pb-4">
+            <h2 className="text-xl font-light tracking-tight text-neutral-500">Read Later</h2>
+             <span className="bg-neutral-100 text-neutral-500 text-[10px] px-2 py-1 font-mono uppercase tracking-widest">{readLaterEmails.length} Items</span>
           </div>
           
-          <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-grow pb-4">
-             {readLaterEmails.length === 0 && <p className="text-neutral-500 text-sm text-center mt-10">Inbox zero for newsletters!</p>}
+          <div className="space-y-3 overflow-y-auto pr-2 custom-scrollbar flex-grow pb-4">
+             {readLaterEmails.length === 0 && <p className="text-neutral-400 font-mono text-xs uppercase tracking-widest text-center mt-10">Inbox Zero</p>}
 
              {readLaterEmails.map((email, idx) => (
-              <div key={idx} className="bg-neutral-950 p-4 rounded-2xl border border-neutral-800 opacity-75 hover:opacity-100 transition-opacity">
+              <div key={idx} className="bg-white p-4 border border-neutral-100 hover:bg-neutral-50 transition-colors">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-semibold text-neutral-400 truncate max-w-[200px]">{email.from.split('<')[0]}</span>
+                  <span className="text-xs font-bold text-neutral-700 truncate max-w-[200px]">{email.from.split('<')[0]}</span>
                 </div>
-                <h3 className="font-medium text-sm text-neutral-300 mb-1 line-clamp-1">{email.subject}</h3>
-                <p className="text-[11px] text-neutral-500 line-clamp-2 mt-1.5">{email.snippet}</p>
+                <h3 className="font-medium text-sm text-black mb-1 line-clamp-1">{email.subject}</h3>
+                <p className="text-xs font-light text-neutral-500 line-clamp-2 mt-2 leading-relaxed">{email.snippet}</p>
+                <div className="mt-3 flex gap-2">
+                  <span className="text-[10px] text-neutral-400 font-mono uppercase tracking-widest">{email.category}</span>
+                </div>
               </div>
              ))}
           </div>
         </div>
 
-        {/* Auto-Replied Column */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-5 flex flex-col h-[75vh]">
-          <div className="flex items-center justify-between mb-4 flex-shrink-0">
-            <h2 className="text-xl font-bold text-emerald-400">Auto-Handled</h2>
+        {/* Auto-Handled Column */}
+        <div className="bg-[#f5f5f5] border border-neutral-200 p-6 flex flex-col h-[75vh] hidden lg:flex">
+          <div className="flex items-center justify-between mb-6 flex-shrink-0 border-b border-neutral-200 pb-4">
+            <h2 className="text-xl font-light tracking-tight text-neutral-400">Auto-Handled</h2>
           </div>
-          <div className="flex flex-col items-center justify-center h-full text-center border-2 border-dashed border-emerald-900/30 rounded-2xl">
-              <svg className="w-8 h-8 text-emerald-500/50 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              <p className="text-emerald-500/50 font-medium text-sm">LLM Auto-Replies<br/>Coming Soon</p>
+          <div className="flex flex-col items-center justify-center h-full text-center border border-dashed border-neutral-300">
+              <span className="text-5xl font-light text-neutral-300 mb-6">*</span>
+              <p className="text-neutral-400 font-mono text-xs uppercase tracking-widest leading-loose">LLM Agent<br/>Operational</p>
           </div>
         </div>
 

@@ -2,67 +2,76 @@ import LoginButton from "@/components/LoginButton";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-neutral-950 text-white selection:bg-indigo-500/30 overflow-hidden relative flex flex-col items-center justify-center font-sans">
-      {/* Background gradients */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-[128px] opacity-50 mix-blend-screen pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[128px] opacity-50 mix-blend-screen pointer-events-none" />
-      
-      {/* Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+    <div className="min-h-screen bg-white text-black font-sans selection:bg-[#ff3300] selection:text-white">
+      {/* Abstract Red Lines Background (mimicking the vector art) */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 flex items-center justify-center opacity-[0.15]">
+        <svg viewBox="0 0 100 100" className="w-[150vw] h-[150vh] stroke-[#ff3300] fill-none" strokeWidth="0.1">
+           <path d="M0,50 L100,50 M50,0 L50,100 M20,20 L80,80 M20,80 L80,20" />
+           <circle cx="50" cy="50" r="20" strokeDasharray="1,1" />
+           <circle cx="50" cy="50" r="30" />
+        </svg>
+      </div>
 
-      <main className="relative z-10 flex flex-col items-center text-center px-6 max-w-5xl mx-auto w-full">
-        {/* Status Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 text-neutral-300 text-sm font-medium mb-10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          Next-Gen AI Email Triage
-        </div>
+      <nav className="relative z-10 flex items-center justify-between p-8 md:px-24 border-b border-neutral-100 bg-white/90 backdrop-blur-md">
+        <div className="text-xl md:text-2xl font-bold tracking-tighter text-black">SortMail</div>
+        <LoginButton />
+      </nav>
 
-        {/* Hero Title */}
-        <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 leading-[1.1]">
-          <span className="bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">Sort</span>
-          <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 bg-clip-text text-transparent">Mail</span>
+      <main className="relative z-10 flex flex-col items-start px-8 md:px-24 pt-32 pb-24 max-w-[1600px] mx-auto">
+        <h1 className="text-[4rem] sm:text-[6rem] md:text-[8rem] font-light tracking-tighter mb-8 leading-[0.9] text-black">
+          The Smartest Way<br />to Sort Email.
         </h1>
         
-        {/* Hero Subtitle */}
-        <p className="text-xl md:text-2xl text-neutral-400 max-w-2xl mb-14 leading-relaxed font-medium">
-          Stop drowning in promotional noise. SortMail uses specialized NLP to automatically triage your inbox and highlight <span className="text-white font-semibold">what actually needs a reply.</span>
+        <p className="text-xl md:text-2xl text-neutral-500 max-w-2xl mb-12 font-light leading-relaxed">
+          Go live with inbox zero in seconds, not hours, with SortMail's modern AI triage platform.
         </p>
 
-        {/* Call to Action */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 mb-24">
-          <LoginButton />
+        {/* Highlight Section */}
+        <div className="mt-32 w-full">
+           <div className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-8">01 &nbsp; Platform Comparison</div>
+           <h2 className="text-[3rem] md:text-[5rem] font-light tracking-tighter mb-12 text-black leading-[1]">Not Just Smarter, <br className="md:hidden" />900% Faster</h2>
+           
+           <div className="bg-[#ff3300] text-white p-8 md:p-24 relative overflow-hidden flex flex-col justify-end min-h-[300px] md:min-h-[500px]">
+              <div className="absolute top-0 right-0 w-[400px] h-[400px] md:w-[800px] md:h-[800px] border border-white/20 rounded-full translate-x-1/3 -translate-y-1/3 flex items-center justify-center">
+                 <div className="w-[300px] h-[300px] md:w-[600px] md:h-[600px] border border-white/20 rounded-full flex items-center justify-center">
+                    <div className="w-[200px] h-[200px] md:w-[400px] md:h-[400px] border border-white/20 rounded-full flex items-center justify-center">
+                       <span className="text-4xl text-white">*</span>
+                    </div>
+                 </div>
+              </div>
+              <p className="text-xs md:text-sm font-mono uppercase tracking-widest mb-4 opacity-80">With SortMail</p>
+              <p className="text-5xl md:text-[7rem] font-light tracking-tighter leading-none">0 Inbox</p>
+           </div>
+           
+           <div className="bg-[#f5f5f5] text-black p-8 md:p-24 flex flex-col justify-end min-h-[250px] md:min-h-[400px]">
+              <p className="text-xs md:text-sm font-mono uppercase tracking-widest mb-4 text-neutral-400">Other Mail Clients</p>
+              <p className="text-5xl md:text-[7rem] font-light tracking-tighter text-neutral-300 leading-none">999+ Unread</p>
+           </div>
         </div>
 
         {/* Feature Teasers */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full text-left">
-          <div className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-8 rounded-3xl hover:border-indigo-500/30 transition-all duration-300 hover:bg-neutral-900/80 group">
-            <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg className="w-6 h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            </div>
-            <h3 className="text-xl font-bold text-neutral-100 mb-3">Smart Classification</h3>
-            <p className="text-neutral-500 leading-relaxed text-sm">Uses advanced stemming and token optimization to classify emails accurately without massive API costs.</p>
+        <div className="mt-32 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 w-full border-t border-neutral-200 pt-24">
+          <div className="flex flex-col border-l-2 border-[#ff3300] pl-8">
+            <h3 className="text-3xl md:text-5xl font-light text-black mb-6 leading-tight">No more building bespoke rules for every newsletter.</h3>
+            <p className="text-neutral-500 font-light text-lg">SortMail's LLM instantly detects promotional noise and removes it.</p>
           </div>
-
-          <div className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-8 rounded-3xl hover:border-purple-500/30 transition-all duration-300 hover:bg-neutral-900/80 group">
-            <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg className="w-6 h-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-            </div>
-            <h3 className="text-xl font-bold text-neutral-100 mb-3">SaaS-Grade Triage</h3>
-            <p className="text-neutral-500 leading-relaxed text-sm">Automatically ignores newsletters and blasts by detecting unsubscribe headers instantly.</p>
-          </div>
-
-          <div className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-8 rounded-3xl hover:border-blue-500/30 transition-all duration-300 hover:bg-neutral-900/80 group">
-            <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-            </div>
-            <h3 className="text-xl font-bold text-neutral-100 mb-3">Auto-Replies</h3>
-            <p className="text-neutral-500 leading-relaxed text-sm">Set up rules to automatically draft and send context-aware replies to specific categories.</p>
+          <div className="flex flex-col border-l-2 border-[#ff3300] pl-8">
+            <h3 className="text-3xl md:text-5xl font-light text-black mb-6 leading-tight">No more missing the emails that actually matter.</h3>
+            <p className="text-neutral-500 font-light text-lg">Important messages are triaged and tagged automatically.</p>
           </div>
         </div>
+
       </main>
+
+      {/* Minimal Footer */}
+      <footer className="relative z-10 border-t border-neutral-200 bg-white py-12 px-8 md:px-24 flex flex-col md:flex-row justify-between items-center text-xs font-mono tracking-widest uppercase text-neutral-400">
+        <div>&copy; 2026 SortMail Platform</div>
+        <div className="flex gap-8 mt-6 md:mt-0">
+          <a href="#" className="hover:text-[#ff3300] transition-colors">Privacy</a>
+          <a href="#" className="hover:text-[#ff3300] transition-colors">Terms</a>
+          <a href="#" className="hover:text-[#ff3300] transition-colors">Contact</a>
+        </div>
+      </footer>
     </div>
   );
 }
