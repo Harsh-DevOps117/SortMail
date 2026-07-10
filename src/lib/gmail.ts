@@ -93,3 +93,54 @@ export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
     throw error;
   }
 }
+
+export async function sendEmail(userEmail: string, to: string, subject: string, textContent: string, htmlContent?: string) {
+  await connectToDatabase();
+  
+  const user = await User.findOne({ email: userEmail });
+  if (!user || !user.accessToken) {
+    throw new Error('User not found or not authenticated with Google');
+  }
+
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET
+  );
+  
+  oauth2Client.setCredentials({
+    access_token: user.accessToken,
+    refresh_token: user.refreshToken,
+  });
+
+  const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+  const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
+  const messageParts = [
+    `To: ${to}`,
+    `Subject: ${utf8Subject}`,
+    'Content-Type: text/html; charset=utf-8',
+    'MIME-Version: 1.0',
+    '',
+    htmlContent || textContent,
+  ];
+
+  const message = messageParts.join('\r\n');
+  const encodedMessage = Buffer.from(message)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+
+  try {
+    const res = await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: {
+        raw: encodedMessage,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw error;
+  }
+}
