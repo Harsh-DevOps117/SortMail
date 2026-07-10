@@ -33,6 +33,18 @@ function extractBody(payload: any): string {
   return '';
 }
 
+function decodeHTMLEntities(text: string) {
+  if (!text) return '';
+  return text
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#8204;/g, '')
+    .replace(/&nbsp;/g, ' ');
+}
+
 export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
   await connectToDatabase();
   
@@ -89,7 +101,7 @@ export async function fetchRecentEmails(userEmail: string, pageToken?: string) {
 
         const subject = subjectHeader ? subjectHeader.value : 'No Subject';
         const from = fromHeader ? fromHeader.value : 'Unknown';
-        const snippet = msgDetail.data.snippet || '';
+        const snippet = decodeHTMLEntities(msgDetail.data.snippet || '');
         const hasUnsubscribe = !!unsubscribeHeader;
         
         const htmlBody = extractBody(msgDetail.data.payload);
