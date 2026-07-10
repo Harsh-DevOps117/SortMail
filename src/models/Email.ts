@@ -9,7 +9,7 @@ export interface IEmail extends Document {
   subject: string;
   snippet: string;
   htmlBody?: string;
-  category: 'internship' | 'youtube' | 'newsletter' | 'personal' | 'social' | 'finance' | 'scam' | 'other';
+  category: 'internship' | 'youtube' | 'newsletter' | 'personal' | 'social' | 'finance' | 'scam' | 'security' | 'other';
   needsReply: boolean;
   receivedAt: Date;
   isAutoReplied: boolean;
@@ -26,7 +26,7 @@ const EmailSchema: Schema = new Schema({
   htmlBody: { type: String },
   category: { 
     type: String, 
-    enum: ['internship', 'youtube', 'newsletter', 'personal', 'social', 'finance', 'scam', 'other'],
+    enum: ['internship', 'youtube', 'newsletter', 'personal', 'social', 'finance', 'scam', 'security', 'other'],
     default: 'other'
   },
   needsReply: { type: Boolean, default: false },

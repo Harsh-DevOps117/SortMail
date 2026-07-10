@@ -11,7 +11,12 @@ export async function classifyEmail(subject: string, htmlBody: string, hasUnsubs
     Subject: ${subject}
     Body (Stemmed/Optimized): ${optimizedBody.substring(0, 500)} // Truncated to save tokens
     
-    Categorize this email into exactly ONE of the following categories: ["internship", "youtube", "newsletter", "personal", "social", "finance", "scam", "other"].
+    Categorize this email into exactly ONE of the following categories: ["internship", "youtube", "newsletter", "personal", "social", "finance", "scam", "security", "other"].
+    
+    IMPORTANT RULES:
+    1. "security": Use this for legitimate security alerts, 2FA codes, new login notifications, and password resets from verified companies (Google, Microsoft, Github, banks, etc).
+    2. "scam": Use this ONLY for phishing, fake invoices, Nigerian prince scams, or suspicious "urgent" emails from untrusted sources. DO NOT mark legitimate security alerts as scams.
+    
     Also determine if the email explicitly requires a human reply (needsReply: true/false).
     
     Output Format:
