@@ -55,12 +55,17 @@ export async function classifyEmail(subject: string, htmlBody: string, hasUnsubs
   }
 }
 
-export async function generateContextualReply(originalSnippet: string, instructions: string) {
+export async function generateContextualReply(originalSnippet: string, instructions: string, senderDetails: string, receiverDetails: string) {
   const prompt = `
     You are an AI Email Assistant. 
+    You are drafting a reply on behalf of: ${receiverDetails}.
+    You are replying to an email sent by: ${senderDetails}.
+    
     A user has received this email snippet: "${originalSnippet}"
     
     The user wants you to draft a reply to this email based on these instructions: "${instructions}"
+    
+    IMPORTANT: Do not use placeholders like [Recipient Name] or [Your Name]. Use the actual sender and receiver details provided above. If the exact name is unknown, infer it from the email addresses or use a generic, natural greeting/sign-off without brackets.
     
     Output ONLY valid JSON in the following format:
     {

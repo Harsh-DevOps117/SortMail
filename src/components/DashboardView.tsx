@@ -336,9 +336,14 @@ export default function DashboardView({ emails, sessionEmail }: { emails: any[],
                            sandbox="allow-same-origin allow-popups"
                         />
                       ) : (
-                        <div className="p-8 text-neutral-700 leading-loose prose max-w-none">
-                           <p>{selectedEmail.snippet}</p>
-                           <p className="mt-8 text-neutral-400 text-sm italic">Note: Plain text email. No HTML body found.</p>
+                        <div className="p-6 md:p-8 h-full bg-neutral-50 flex flex-col justify-between">
+                           <div className="text-black font-mono text-sm leading-relaxed whitespace-pre-wrap p-6 md:p-10 border border-neutral-200 bg-white shadow-sm h-full overflow-y-auto custom-scrollbar">
+                             {selectedEmail.snippet}
+                           </div>
+                           <div className="mt-4 flex items-center justify-between border-t border-neutral-200 pt-4">
+                             <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold flex items-center gap-2"><Settings className="w-3 h-3"/> Plain Text Fallback</span>
+                             <span className="text-[10px] uppercase tracking-widest text-neutral-400 hidden sm:inline-block">No HTML rendering required</span>
+                           </div>
                         </div>
                       )}
                    </div>

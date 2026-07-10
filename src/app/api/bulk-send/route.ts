@@ -35,7 +35,12 @@ export async function POST(request: Request) {
 
       for (const email of emailsToReply) {
         try {
-          const draft = await generateContextualReply(email.snippet || email.subject, instructions);
+          const draft = await generateContextualReply(
+            email.snippet || email.subject, 
+            instructions,
+            `${email.senderName || ''} <${email.senderEmail}>`,
+            `${session.user?.name || ''} <${session.user?.email}>`
+          );
           let finalBody = draft.body;
           if (attachmentUrl) {
              finalBody += `<br><br><a href="${attachmentUrl}">View Attached Document</a>`;
