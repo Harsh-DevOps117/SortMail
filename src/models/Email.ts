@@ -37,4 +37,4 @@ const EmailSchema: Schema = new Schema({
 // Create compound index for faster fetching for the UI
 EmailSchema.index({ userId: 1, category: 1, receivedAt: -1 });
 
-export default mongoose.model<IEmail>('Email', EmailSchema);
+export default mongoose.models.Email || mongoose.model<IEmail>('Email', EmailSchema);
